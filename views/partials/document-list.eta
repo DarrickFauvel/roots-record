@@ -1,0 +1,52 @@
+<div class="document-list">
+  <% if (it.documents.length > 0) { %>
+    <ul class="doc-grid">
+      <% for (const d of it.documents) { %>
+        <li class="doc-card">
+          <a href="<%= d.cloudinary_url %>" target="_blank" rel="noopener">
+            <img src="<%= d.cloudinary_url.replace('/upload/', '/upload/w_200,h_200,c_thumb/') %>" alt="<%= d.title %>" loading="lazy" />
+            <span><%= d.title %></span>
+            <small><%= d.doc_type.replace(/_/g, " ") %></small>
+          </a>
+          <button
+            class="small outline"
+            data-on:click="confirm('Delete document?') && @delete('/api/documents/<%= d.id %>').then(()=>@get('/api/people/<%= it.personId %>/documents'))"
+          >Delete</button>
+        </li>
+      <% } %>
+    </ul>
+  <% } else { %>
+    <p><em>No documents uploaded yet.</em></p>
+  <% } %>
+
+  <details>
+    <summary>Upload Document / Photo</summary>
+    <form
+      method="POST"
+      action="/api/documents"
+      enctype="multipart/form-data"
+    >
+      <input type="hidden" name="person_id" value="<%= it.personId %>" />
+
+      <label>Title</label>
+      <input type="text" name="title" required placeholder="Birth Certificate, Wedding Photo…" />
+
+      <label>Type</label>
+      <select name="doc_type">
+        <option value="other">Other</option>
+        <option value="birth_certificate">Birth Certificate</option>
+        <option value="death_certificate">Death Certificate</option>
+        <option value="marriage_certificate">Marriage Certificate</option>
+        <option value="photo">Photo</option>
+      </select>
+
+      <label>File</label>
+      <input type="file" name="file" required accept="image/*,.pdf" />
+
+      <label>Notes (optional)</label>
+      <input type="text" name="notes" />
+
+      <button type="submit">Upload</button>
+    </form>
+  </details>
+</div>

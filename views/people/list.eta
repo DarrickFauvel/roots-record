@@ -1,0 +1,24 @@
+<div class="page-header">
+  <h1>People</h1>
+  <a href="/people/new" role="button">+ Add Person</a>
+</div>
+
+<div class="search-wrap" data-signals='{"q":""}'>
+  <span class="search-icon">⌕</span>
+  <input
+    type="search"
+    placeholder="Search by name, place…"
+    autocomplete="off"
+    data-bind="q"
+    data-on:input.debounce.300ms="@get('/api/search?q=' + $q)"
+  />
+</div>
+
+<ul id="people-list" class="person-list">
+  <% for (const p of it.people) { %>
+    <%~ includeFile("partials/person-card", { p }) %>
+  <% } %>
+  <% if (it.people.length === 0) { %>
+    <li style="padding:1rem 0; color:var(--muted); font-style:italic;">No people recorded yet.</li>
+  <% } %>
+</ul>

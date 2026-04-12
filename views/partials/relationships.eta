@@ -1,0 +1,94 @@
+<div class="panel">
+  <% if (it.parents.length > 0) { %>
+    <h3>Parents</h3>
+    <ul class="rel-list">
+      <% for (const r of it.parents) { %>
+        <li>
+          <a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a>
+          <button class="small outline" data-on:click="@delete('/api/relationships/<%= r.rel_id %>').then(()=>@get('/api/people/<%= it.personId %>/relationships'))">Remove</button>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
+
+  <% if (it.spouses.length > 0) { %>
+    <h3>Spouses / Partners</h3>
+    <ul class="rel-list">
+      <% for (const r of it.spouses) { %>
+        <li>
+          <span style="display:flex;gap:.5rem;align-items:center">
+            <a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a>
+            <% if (r.start_date) { %><span class="type-badge">m. <%= r.start_date %></span><% } %>
+          </span>
+          <button class="small outline" data-on:click="@delete('/api/relationships/<%= r.rel_id %>').then(()=>@get('/api/people/<%= it.personId %>/relationships'))">Remove</button>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
+
+  <% if (it.children.length > 0) { %>
+    <h3>Children</h3>
+    <ul class="rel-list">
+      <% for (const r of it.children) { %>
+        <li>
+          <a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a>
+          <button class="small outline" data-on:click="@delete('/api/relationships/<%= r.rel_id %>').then(()=>@get('/api/people/<%= it.personId %>/relationships'))">Remove</button>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
+
+  <% if (it.siblings.length > 0) { %>
+    <h3>Siblings</h3>
+    <ul class="rel-list">
+      <% for (const r of it.siblings) { %>
+        <li><a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a></li>
+      <% } %>
+    </ul>
+  <% } %>
+
+  <% if (!it.parents.length && !it.spouses.length && !it.children.length && !it.siblings.length) { %>
+    <p style="color:var(--muted);font-style:italic;margin:0">No relationships recorded.</p>
+  <% } %>
+
+  <details style="margin-top:1rem">
+    <summary>Add Relationship</summary>
+    <div>
+      <form
+        data-signals='{"rel_person_id":"","rel_type":"parent_child","rel_direction":"child","rel_start_date":"","person_id":"<%= it.personId %>"}'
+        data-on:submit.prevent="@post('/api/relationships').then(()=>@get('/api/people/<%= it.personId %>/relationships'))"
+      >
+        <label>Person ID</label>
+        <input type="text" placeholder="Search name or paste ID…" data-bind="rel_person_id" list="people-datalist" />
+        <datalist id="people-datalist">
+          <% for (const person of (it.allPeople ?? [])) { %>
+            <option value="<%= person.id %>"><%= person.given_name %> <%= person.surname ?? "" %></option>
+          <% } %>
+        </datalist>
+
+        <label>Type</label>
+        <select data-bind="rel_type">
+          <option value="parent_child">Parent / Child</option>
+          <option value="spouse">Spouse / Partner</option>
+        </select>
+
+        <div data-show="$rel_type === 'parent_child'">
+          <label>Direction</label>
+          <select data-bind="rel_direction">
+            <option value="child">Selected person is a parent of this person</option>
+            <option value="parent">Selected person is a child of this person</option>
+          </select>
+        </div>
+
+        <div data-show="$rel_type === 'spouse'">
+          <label>Marriage Date (optional)</label>
+          <input type="text" placeholder="YYYY-MM-DD" data-bind="rel_start_date" />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit">Add Relationship</button>
+        </div>
+      </form>
+    </div>
+  </details>
+</div>

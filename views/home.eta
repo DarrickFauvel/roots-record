@@ -1,0 +1,44 @@
+<div class="home-hero">
+  <h1>Your family's<br><em>living archive</em></h1>
+  <div class="home-actions">
+    <a href="/people/new" role="button">Add Person</a>
+    <a href="/people" role="button" class="outline">Browse All</a>
+    <a href="/tree" role="button" class="outline">Family Tree</a>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-number"><%= it.stats.peopleCount %></span>
+    <span class="stat-label">People</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number"><%= it.stats.relationshipCount %></span>
+    <span class="stat-label">Relationships</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number"><%= it.stats.documentCount %></span>
+    <span class="stat-label">Documents</span>
+  </div>
+</div>
+
+<div class="recent-section">
+  <h2>Recently Added</h2>
+  <% if (it.recent.length === 0) { %>
+    <p style="color:var(--muted); font-style:italic;">No records yet. <a href="/people/new">Add the first person.</a></p>
+  <% } else { %>
+    <ul class="person-list">
+      <% for (const p of it.recent) { %>
+        <li class="person-card">
+          <a href="/people/<%= p.id %>">
+            <strong><%= p.given_name %> <%= p.surname ?? "" %></strong>
+            <span class="person-meta">
+              <% if (p.birth_date) { %><span>b. <%= p.birth_date %></span><% } %>
+              <% if (p.death_date) { %><span>d. <%= p.death_date %></span><% } %>
+            </span>
+          </a>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
+</div>

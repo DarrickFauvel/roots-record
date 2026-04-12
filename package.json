@@ -1,0 +1,30 @@
+{
+  "name": "roots-record",
+  "version": "0.1.0",
+  "description": "Family vital records app",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@libsql/client": "latest",
+    "@libsql/kysely-libsql": "^0.4.1",
+    "@starfederation/datastar-sdk": "latest",
+    "better-auth": "latest",
+    "cloudinary": "latest",
+    "dotenv": "latest",
+    "eta": "latest",
+    "express": "latest",
+    "multer": "latest",
+    "nanoid": "latest"
+  },
+  "devDependencies": {
+    "@types/express": "latest",
+    "@types/multer": "latest",
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}

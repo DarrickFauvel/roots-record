@@ -1,0 +1,47 @@
+<% const p = it.person; %>
+<div class="page-header">
+  <div>
+    <h1><%= p.given_name %> <%= p.surname ?? "" %></h1>
+    <% if (p.sex && p.sex !== 'unknown') { %>
+      <small style="color:var(--muted)"><%= p.sex === 'M' ? 'Male' : p.sex === 'F' ? 'Female' : p.sex %></small>
+    <% } %>
+  </div>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+    <a href="/people/<%= p.id %>/edit" role="button" class="outline">Edit</a>
+    <button class="outline danger small" data-on:click="confirm('Delete this person?') && @delete('/api/people/<%= p.id %>').then(()=>window.location='/people')">Delete</button>
+  </div>
+</div>
+
+<dl class="vital-facts">
+  <% if (p.birth_date || p.birth_place) { %>
+    <dt>Born</dt>
+    <dd><%= [p.birth_date, p.birth_place].filter(Boolean).join(' — ') %></dd>
+  <% } %>
+  <% if (p.death_date || p.death_place) { %>
+    <dt>Died</dt>
+    <dd><%= [p.death_date, p.death_place].filter(Boolean).join(' — ') %><% if (p.death_cause) { %> <span style="color:var(--muted)">(<%= p.death_cause %>)</span><% } %></dd>
+  <% } %>
+</dl>
+
+<% if (p.notes) { %>
+  <div class="panel" style="margin-top:0"><p style="margin:0;font-style:italic"><%= p.notes %></p></div>
+<% } %>
+
+<p class="profile-section-title">Residences &amp; Migration</p>
+<div id="residences-section">
+  <%~ includeFile("partials/residences", { residences: it.residences, personId: p.id }) %>
+</div>
+
+<p class="profile-section-title">Family Relationships</p>
+<div id="relationships-section">
+  <%~ includeFile("partials/relationships", {
+    parents: it.parents, spouses: it.spouses,
+    children: it.children, siblings: it.siblings,
+    personId: p.id, allPeople: it.allPeople
+  }) %>
+</div>
+
+<p class="profile-section-title">Documents &amp; Photos</p>
+<div id="documents-section">
+  <%~ includeFile("partials/document-list", { documents: it.documents, personId: p.id }) %>
+</div>

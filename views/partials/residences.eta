@@ -1,0 +1,55 @@
+<div class="panel">
+  <% if (it.residences.length > 0) { %>
+    <ul class="res-list">
+      <% for (const r of it.residences) { %>
+        <li>
+          <span style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <strong style="font-family:var(--font-display)"><%= r.place %></strong>
+            <% if (r.start_date || r.end_date) { %>
+              <span class="type-badge"><%= r.start_date ?? '?' %> – <%= r.end_date ?? 'present' %></span>
+            <% } %>
+            <span class="type-badge"><%= r.type %></span>
+          </span>
+          <button class="small outline" data-on:click="@delete('/api/residences/<%= r.id %>').then(()=>@get('/api/people/<%= it.personId %>/residences'))">Remove</button>
+        </li>
+      <% } %>
+    </ul>
+  <% } else { %>
+    <p style="color:var(--muted);font-style:italic;margin:0">No residences recorded.</p>
+  <% } %>
+
+  <details style="margin-top:1rem">
+    <summary>Add Residence / Migration</summary>
+    <div>
+      <form
+        data-signals='{"res_place":"","res_type":"residence","res_start":"","res_end":"","res_notes":"","person_id":"<%= it.personId %>"}'
+        data-on:submit.prevent="@post('/api/residences').then(()=>@get('/api/people/<%= it.personId %>/residences'))"
+      >
+        <label>Place</label>
+        <input type="text" required data-bind="res_place" placeholder="City, State, Country" />
+
+        <label>Type</label>
+        <select data-bind="res_type">
+          <option value="residence">Residence</option>
+          <option value="immigration">Immigration</option>
+          <option value="emigration">Emigration</option>
+        </select>
+
+        <div class="form-grid">
+          <div>
+            <label>From</label>
+            <input type="text" placeholder="YYYY" data-bind="res_start" />
+          </div>
+          <div>
+            <label>To</label>
+            <input type="text" placeholder="YYYY or leave blank" data-bind="res_end" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit">Add</button>
+        </div>
+      </form>
+    </div>
+  </details>
+</div>

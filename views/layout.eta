@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= it.title ?? "Roots Record" %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-beta.11/bundles/datastar.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="nav-brand">
+        <span class="brand-mark">R</span>
+        <span class="brand-text">Roots Record</span>
+      </a>
+      <% if (it.user) { %>
+        <nav class="main-nav">
+          <a href="/people" class="nav-link">People</a>
+          <a href="/tree" class="nav-link">Family Tree</a>
+          <a href="/people/new" class="nav-link nav-link--cta">Add Person</a>
+        </nav>
+        <div class="user-menu">
+          <span class="user-name"><%= it.user.name ?? it.user.email %></span>
+          <a href="#" class="sign-out" data-on:click="@post('/api/auth/sign-out').then(()=>window.location='/login')">Sign out</a>
+        </div>
+      <% } %>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <%~ it.body %>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-brand">Roots Record</span>
+      <span class="footer-tagline">Preserving family history across generations</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<li class="tree-node">
+  <div class="tree-person">
+    <a href="/people/<%= it.node.id %>">
+      <strong><%= it.node.given_name %> <%= it.node.surname ?? "" %></strong>
+      <% if (it.node.birth_date || it.node.death_date) { %>
+        <small>
+          <% if (it.node.birth_date) { %>b. <%= it.node.birth_date.slice(0,4) %><% } %>
+          <% if (it.node.death_date) { %> &ndash; d. <%= it.node.death_date.slice(0,4) %><% } %>
+        </small>
+      <% } %>
+    </a>
+    <% if (it.node.spouses && it.node.spouses.length > 0) { %>
+      <span class="spouse-link">
+        <% for (const s of it.node.spouses) { %>
+          &#x2665; <a href="/people/<%= s.id %>"><%= s.given_name %> <%= s.surname ?? "" %></a>
+        <% } %>
+      </span>
+    <% } %>
+  </div>
+  <% if (it.node.children && it.node.children.length > 0) { %>
+    <ul>
+      <% for (const child of it.node.children) { %>
+        <%~ includeFile("partials/tree-node", { node: child }) %>
+      <% } %>
+    </ul>
+  <% } %>
+</li>
