@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="/styles.css" />
   <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.8/bundles/datastar.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/components.js" defer></script>
 </head>
 <body>
   <header class="site-header" data-store="{navOpen: false}">
@@ -37,17 +38,8 @@
           <a href="/auth/sign-out" class="sign-out">Sign out</a>
         </div>
         <div class="nav-end">
-          <div class="theme-wrap">
-            <button class="theme-btn" id="theme-btn" aria-label="Choose color theme" title="Choose theme" onclick="toggleThemePicker(event)"></button>
-            <div class="theme-picker" id="theme-picker">
-              <button class="theme-swatch" data-theme="forest"  style="--sw:#166534" title="Forest"  onclick="pickTheme('forest')"></button>
-              <button class="theme-swatch" data-theme="ocean"   style="--sw:#1D4ED8" title="Ocean"   onclick="pickTheme('ocean')"></button>
-              <button class="theme-swatch" data-theme="ember"   style="--sw:#B45309" title="Ember"   onclick="pickTheme('ember')"></button>
-              <button class="theme-swatch" data-theme="plum"    style="--sw:#6D28D9" title="Plum"    onclick="pickTheme('plum')"></button>
-              <button class="theme-swatch" data-theme="teal"    style="--sw:#0F766E" title="Teal"    onclick="pickTheme('teal')"></button>
-            </div>
-          </div>
-          <button class="nav-qr-btn" onclick="showQR()" aria-label="QR Code" title="QR Code">
+          <theme-picker></theme-picker>
+          <button class="nav-qr-btn" id="qr-btn" aria-label="QR Code" title="QR Code">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
               <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
@@ -100,83 +92,17 @@
     </div>
   </footer>
 
-  <dialog id="qr-dialog">
-    <div class="qr-dialog-inner">
-      <p class="qr-url" id="qr-url-text"></p>
-      <div id="qr-img"></div>
-      <button class="outline" onclick="document.getElementById('qr-dialog').close()">Close</button>
-    </div>
-  </dialog>
-
-  <dialog id="confirm-dialog">
-    <div class="confirm-dialog-inner">
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="confirm-icon" aria-hidden="true">
-        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
-      <p id="confirm-message" class="confirm-message">Are you sure?</p>
-      <div class="confirm-actions">
-        <button class="outline" onclick="document.getElementById('confirm-dialog').close()">Cancel</button>
-        <button class="danger" id="confirm-ok">Delete</button>
-      </div>
-    </div>
-  </dialog>
+  <confirm-dialog id="confirm-el"></confirm-dialog>
+  <qr-modal id="qr-modal"></qr-modal>
 
   <script>
-    // Confirm modal
-    function confirmAction(message, onConfirm) {
-      const dialog = document.getElementById('confirm-dialog');
-      document.getElementById('confirm-message').textContent = message;
-      const ok = document.getElementById('confirm-ok');
-      const newOk = ok.cloneNode(true);
-      ok.parentNode.replaceChild(newOk, ok);
-      newOk.addEventListener('click', () => { dialog.close(); onConfirm(); });
-      dialog.showModal();
+    function confirmAction(msg, cb) {
+      document.getElementById('confirm-el').show(msg, cb);
     }
-    document.getElementById('confirm-dialog').addEventListener('click', function(e) {
-      if (e.target === this) this.close();
+    document.getElementById('qr-btn').addEventListener('click', () => {
+      document.getElementById('qr-modal').show();
     });
-
-    // QR code
-    let _qr;
-    function showQR() {
-      const dialog = document.getElementById('qr-dialog');
-      const url = location.origin;
-      document.getElementById('qr-url-text').textContent = url;
-      dialog.showModal();
-      const el = document.getElementById('qr-img');
-      el.innerHTML = '';
-      _qr = new QRCode(el, { text: url, width: 220, height: 220 });
-    }
-    document.getElementById('qr-dialog').addEventListener('click', function(e) {
-      if (e.target === this) this.close();
-    });
-
-    // Theme picker
-    const _themes = ['forest','ocean','ember','plum','teal'];
-    function applyTheme(name) {
-      document.documentElement.setAttribute('data-theme', name);
-      localStorage.setItem('rr-theme', name);
-      document.querySelectorAll('.theme-swatch').forEach(s => {
-        s.classList.toggle('is-active', s.dataset.theme === name);
-      });
-    }
-    function pickTheme(name) {
-      applyTheme(name);
-      document.getElementById('theme-picker').classList.remove('is-open');
-    }
-    function toggleThemePicker(e) {
-      e.stopPropagation();
-      document.getElementById('theme-picker').classList.toggle('is-open');
-    }
-    document.addEventListener('click', () => {
-      document.getElementById('theme-picker')?.classList.remove('is-open');
-    });
-    applyTheme(localStorage.getItem('rr-theme') || 'forest');
-
-    // Service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
   </script>
 </body>
 </html>
