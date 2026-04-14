@@ -34,6 +34,27 @@ residencesRouter.post("/", async (req, res) => {
   });
 });
 
+// PUT /api/residences/:id
+residencesRouter.put("/:id", async (req, res) => {
+  const { edit_res_place, edit_res_type, edit_res_start, edit_res_end } =
+    req.body as Record<string, string>;
+  if (!edit_res_place) {
+    res.status(400).json({ error: "place is required" });
+    return;
+  }
+  const row = await db.execute({ sql: "SELECT person_id FROM residences WHERE id = ?", args: [req.params.id] });
+  const personId = row.rows[0]?.person_id as string | undefined;
+  if (!personId) { res.status(404).json({ error: "not found" }); return; }
+  await db.execute({
+    sql: "UPDATE residences SET place=?, type=?, start_date=?, end_date=? WHERE id=?",
+    args: [edit_res_place, edit_res_type || "residence", edit_res_start || null, edit_res_end || null, req.params.id],
+  });
+  const html = await renderResidences(personId);
+  ServerSentEventGenerator.stream(req, res, (stream) => {
+    stream.patchElements(`<div id="residences-section">${html}</div>`);
+  });
+});
+
 // DELETE /api/residences/:id
 residencesRouter.delete("/:id", async (req, res) => {
   const row = await db.execute({ sql: "SELECT person_id FROM residences WHERE id = ?", args: [req.params.id] });

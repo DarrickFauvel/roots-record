@@ -151,7 +151,7 @@ small { font-size: 0.78rem; font-family: var(--font-mono); color: var(--muted); 
   margin-left: 0.5rem;
 }
 
-.nav-link--cta:hover { background: var(--gold-light); }
+.nav-link--cta:hover { background: var(--gold-light); color: #fff !important; }
 
 .user-menu {
   display: flex;
@@ -188,8 +188,8 @@ small { font-size: 0.78rem; font-family: var(--font-mono); color: var(--muted); 
   transition: all .15s;
 }
 .nav-qr-btn:hover { border-color: var(--gold); color: var(--gold); background: transparent; transform: none; box-shadow: none; }
-.nav-qr-btn--mobile { display: none; width: 40px; height: 40px; padding: 0; align-items: center; justify-content: center; margin-left: auto; }
-@media (max-width: 680px) { .nav-qr-btn--mobile { display: flex; } }
+.nav-end { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
+.nav-qr-btn { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
 /* ─── QR Dialog ──────────────────────────────────────────────────────────── */
 #qr-dialog {
@@ -331,6 +331,7 @@ small { font-size: 0.78rem; font-family: var(--font-mono); color: var(--muted); 
 
 button:hover, [role="button"]:hover {
   background: var(--ink-soft);
+  color: #fff;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
@@ -623,24 +624,26 @@ legend {
   letter-spacing: 0.1em;
   color: var(--muted);
   font-weight: 500;
-  margin-top: 0;
+  margin-top: 1.5rem;
   margin-bottom: 0.75rem;
   font-family: var(--font-body);
 }
+
+.panel h3:first-child { margin-top: 0; }
 
 .rel-list, .res-list {
   list-style: none;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0;
 }
 
 .rel-list li, .res-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 0;
+  padding: 0.6rem 0;
   border-bottom: 1px dashed var(--border);
   font-size: 0.9rem;
   gap: 0.5rem;
@@ -926,6 +929,8 @@ details > :not(summary) { padding: 1rem 0.875rem; }
   z-index: 9;
 }
 .mobile-nav {
+  position: relative;
+  z-index: 10;
   background: var(--ink-soft);
   border-top: 1px solid rgba(196,146,58,.25);
   padding: 0.75rem 1rem 1rem;
@@ -973,7 +978,6 @@ details > :not(summary) { padding: 1rem 0.875rem; }
   .user-menu { display: none; }
   .nav-hamburger { display: flex; }
   .header-inner { gap: 0.5rem; padding: 0 1rem; }
-  .nav-qr-btn--mobile { margin-left: auto; margin-right: 0; }
 
   /* Layout */
   .site-main { padding: 1.5rem 1rem; }
@@ -1019,7 +1023,7 @@ details > :not(summary) { padding: 1rem 0.875rem; }
   flex-wrap: wrap;
   gap: 0.25rem;
   max-width: var(--max-width);
-  margin: 0 auto;
+  margin: 0;
   padding: 0.55rem 2rem;
   font-family: var(--font-body);
   font-size: 0.8rem;

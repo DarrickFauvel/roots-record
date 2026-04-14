@@ -31,23 +31,24 @@
           <a href="/people" class="nav-link">People</a>
           <a href="/tree" class="nav-link">Family Tree</a>
           <a href="/people/new" class="nav-link nav-link--cta">Add Person</a>
-          <button class="nav-qr-btn" onclick="showQR()" title="QR Code">&#x2338;</button>
         </nav>
         <div class="user-menu">
           <span class="user-name"><%= it.user.name ?? it.user.email %></span>
           <a href="/auth/sign-out" class="sign-out">Sign out</a>
         </div>
-        <button class="nav-qr-btn nav-qr-btn--mobile" onclick="showQR()" aria-label="QR Code" title="QR Code">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
-          </svg>
-        </button>
-        <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu"
-              data-class-is-open="navOpen"
-              data-on:click="$navOpen = !$navOpen">
-          <span></span><span></span><span></span>
-        </button>
+        <div class="nav-end">
+          <button class="nav-qr-btn" onclick="showQR()" aria-label="QR Code" title="QR Code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
+            </svg>
+          </button>
+          <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu"
+                data-class-is-open="navOpen"
+                data-on:click="$navOpen = !$navOpen">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
       <% } %>
     </div>
     <% if (it.user) { %>
@@ -56,7 +57,6 @@
         <a href="/people" class="mobile-nav-link">People</a>
         <a href="/tree" class="mobile-nav-link">Family Tree</a>
         <a href="/people/new" class="mobile-nav-link mobile-nav-link--cta">+ Add Person</a>
-        <button class="mobile-nav-link mobile-nav-qr" data-on:click="$navOpen = false; showQR()">QR Code</button>
         <div class="mobile-nav-user">
           <span><%= it.user.name ?? it.user.email %></span>
           <a href="/auth/sign-out">Sign out</a>

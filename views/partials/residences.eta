@@ -1,4 +1,4 @@
-<div class="panel">
+<div class="panel" data-signals='{"edit_res_id":"","edit_res_place":"","edit_res_type":"residence","edit_res_start":"","edit_res_end":""}'>
   <% if (it.residences.length > 0) { %>
     <ul class="res-list">
       <% for (const r of it.residences) { %>
@@ -10,13 +10,45 @@
             <% } %>
             <span class="type-badge"><%= r.type %></span>
           </span>
-          <button class="small outline" data-on:click="confirmAction('Remove this residence?', () => @delete('/api/residences/<%= r.id %>'))">Remove</button>
+          <div style="display:flex;gap:.5rem">
+            <button class="small outline" data-on:click="$edit_res_id=<%= JSON.stringify(String(r.id)) %>;$edit_res_place=<%= JSON.stringify(String(r.place||'')) %>;$edit_res_type=<%= JSON.stringify(String(r.type||'residence')) %>;$edit_res_start=<%= JSON.stringify(String(r.start_date||'')) %>;$edit_res_end=<%= JSON.stringify(String(r.end_date||'')) %>">Edit</button>
+            <button class="small outline" data-on:click="confirmAction('Remove this residence?', () => @delete('/api/residences/<%= r.id %>'))">Remove</button>
+          </div>
         </li>
       <% } %>
     </ul>
   <% } else { %>
     <p style="color:var(--muted);font-style:italic;margin:0">No residences recorded.</p>
   <% } %>
+
+  <div data-show="$edit_res_id !== ''" style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;display:none">
+    <strong style="font-family:var(--font-display)">Edit Residence</strong>
+    <label style="margin-top:.75rem">Place</label>
+    <input type="text" data-bind="edit_res_place" placeholder="City, State, Country" />
+
+    <label>Type</label>
+    <select data-bind="edit_res_type">
+      <option value="residence">Residence</option>
+      <option value="immigration">Immigration</option>
+      <option value="emigration">Emigration</option>
+    </select>
+
+    <div class="form-grid">
+      <div>
+        <label>From</label>
+        <input type="text" placeholder="YYYY" data-bind="edit_res_start" />
+      </div>
+      <div>
+        <label>To</label>
+        <input type="text" placeholder="YYYY or leave blank" data-bind="edit_res_end" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" data-on:click="@put('/api/residences/'+$edit_res_id)">Save</button>
+      <button type="button" class="outline" data-on:click="$edit_res_id=''">Cancel</button>
+    </div>
+  </div>
 
   <details style="margin-top:1rem">
     <summary>Add Residence / Migration</summary>
