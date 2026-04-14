@@ -33,8 +33,8 @@
           <a href="/people/<%= p.id %>">
             <strong><%= p.given_name %> <%= p.surname ?? "" %></strong>
             <span class="person-meta">
-              <% if (p.birth_date) { %><span>b. <%= p.birth_date %></span><% } %>
-              <% if (p.death_date) { %><span>d. <%= p.death_date %></span><% } %>
+              <% if (p.birth_date) { %><span>b. <%= fmtDate(p.birth_date) %></span><% } %>
+              <% if (p.death_date) { %><span>d. <%= fmtDate(p.death_date) %></span><% } %>
             </span>
           </a>
         </li>

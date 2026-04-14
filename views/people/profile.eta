@@ -1,7 +1,7 @@
 <% const p = it.person; %>
 <div class="page-header">
   <div>
-    <h1><%= p.given_name %> <%= p.surname ?? "" %></h1>
+    <h1><%= p.given_name %><%= p.middle_name ? ` ${p.middle_name}` : "" %> <%= p.surname ?? "" %><% if (p.maiden_name) { %> <span style="color:var(--muted);font-size:0.8em;font-style:italic">(née <%= p.maiden_name %>)</span><% } %></h1>
     <% if (p.sex && p.sex !== 'unknown') { %>
       <small style="color:var(--muted)"><%= p.sex === 'M' ? 'Male' : p.sex === 'F' ? 'Female' : p.sex %></small>
     <% } %>
@@ -15,11 +15,11 @@
 <dl class="vital-facts">
   <% if (p.birth_date || p.birth_place) { %>
     <dt>Born</dt>
-    <dd><%= [p.birth_date, p.birth_place].filter(Boolean).join(' — ') %></dd>
+    <dd><%= [fmtDate(p.birth_date), p.birth_place].filter(Boolean).join(' — ') %></dd>
   <% } %>
   <% if (p.death_date || p.death_place) { %>
     <dt>Died</dt>
-    <dd><%= [p.death_date, p.death_place].filter(Boolean).join(' — ') %><% if (p.death_cause) { %> <span style="color:var(--muted)">(<%= p.death_cause %>)</span><% } %></dd>
+    <dd><%= [fmtDate(p.death_date), p.death_place].filter(Boolean).join(' — ') %><% if (p.death_cause) { %> <span style="color:var(--muted)">(<%= p.death_cause %>)</span><% } %></dd>
   <% } %>
 </dl>
 
@@ -29,12 +29,12 @@
 
 <p class="profile-section-title">Residences &amp; Migration</p>
 <div id="residences-section">
-  <%~ includeFile("partials/residences", { residences: it.residences, personId: p.id }) %>
+  <%~ include("../partials/residences", { residences: it.residences, personId: p.id }) %>
 </div>
 
 <p class="profile-section-title">Family Relationships</p>
 <div id="relationships-section">
-  <%~ includeFile("partials/relationships", {
+  <%~ include("../partials/relationships", {
     parents: it.parents, spouses: it.spouses,
     children: it.children, siblings: it.siblings,
     personId: p.id, allPeople: it.allPeople
@@ -43,5 +43,5 @@
 
 <p class="profile-section-title">Documents &amp; Photos</p>
 <div id="documents-section">
-  <%~ includeFile("partials/document-list", { documents: it.documents, personId: p.id }) %>
+  <%~ include("../partials/document-list", { documents: it.documents, personId: p.id }) %>
 </div>

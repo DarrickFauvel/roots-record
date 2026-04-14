@@ -3,33 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1C1410" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Roots Record" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
   <title><%= it.title ?? "Roots Record" %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
-  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-beta.11/bundles/datastar.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.8/bundles/datastar.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-  <header class="site-header">
+  <header class="site-header" data-store="{navOpen: false}">
     <div class="header-inner">
       <a href="/" class="nav-brand">
         <span class="brand-mark">R</span>
         <span class="brand-text">Roots Record</span>
       </a>
       <% if (it.user) { %>
-        <nav class="main-nav">
+        <nav class="main-nav" id="main-nav" aria-label="Main navigation">
           <a href="/people" class="nav-link">People</a>
           <a href="/tree" class="nav-link">Family Tree</a>
           <a href="/people/new" class="nav-link nav-link--cta">Add Person</a>
+          <button class="nav-qr-btn" onclick="showQR()" title="QR Code">&#x2338;</button>
         </nav>
         <div class="user-menu">
           <span class="user-name"><%= it.user.name ?? it.user.email %></span>
-          <a href="#" class="sign-out" data-on:click="@post('/api/auth/sign-out').then(()=>window.location='/login')">Sign out</a>
+          <a href="/auth/sign-out" class="sign-out">Sign out</a>
         </div>
+        <button class="nav-qr-btn nav-qr-btn--mobile" onclick="showQR()" aria-label="QR Code" title="QR Code">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
+          </svg>
+        </button>
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu"
+              data-class-is-open="navOpen"
+              data-on:click="$navOpen = !$navOpen">
+          <span></span><span></span><span></span>
+        </button>
       <% } %>
     </div>
+    <% if (it.user) { %>
+      <div class="mobile-nav-overlay" data-show="$navOpen" data-on:click="$navOpen = false"></div>
+      <div class="mobile-nav" data-show="$navOpen">
+        <a href="/people" class="mobile-nav-link">People</a>
+        <a href="/tree" class="mobile-nav-link">Family Tree</a>
+        <a href="/people/new" class="mobile-nav-link mobile-nav-link--cta">+ Add Person</a>
+        <button class="mobile-nav-link mobile-nav-qr" data-on:click="$navOpen = false; showQR()">QR Code</button>
+        <div class="mobile-nav-user">
+          <span><%= it.user.name ?? it.user.email %></span>
+          <a href="/auth/sign-out">Sign out</a>
+        </div>
+      </div>
+    <% } %>
   </header>
+
+  <% if (it.breadcrumbs && it.breadcrumbs.length > 0) { %>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/" class="breadcrumb-home">Home</a>
+    <% for (const crumb of it.breadcrumbs) { %>
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <% if (crumb.href) { %>
+        <a href="<%= crumb.href %>" class="breadcrumb-link"><%= crumb.label %></a>
+      <% } else { %>
+        <span class="breadcrumb-current" aria-current="page"><%= crumb.label %></span>
+      <% } %>
+    <% } %>
+  </nav>
+  <% } %>
 
   <main class="site-main">
     <%~ it.body %>
@@ -41,5 +89,35 @@
       <span class="footer-tagline">Preserving family history across generations</span>
     </div>
   </footer>
+
+  <dialog id="qr-dialog">
+    <div class="qr-dialog-inner">
+      <p class="qr-url" id="qr-url-text"></p>
+      <div id="qr-img"></div>
+      <button class="outline" onclick="document.getElementById('qr-dialog').close()">Close</button>
+    </div>
+  </dialog>
+
+  <script>
+    // QR code
+    let _qr;
+    function showQR() {
+      const dialog = document.getElementById('qr-dialog');
+      const url = location.origin;
+      document.getElementById('qr-url-text').textContent = url;
+      dialog.showModal();
+      const el = document.getElementById('qr-img');
+      el.innerHTML = '';
+      _qr = new QRCode(el, { text: url, width: 220, height: 220 });
+    }
+    document.getElementById('qr-dialog').addEventListener('click', function(e) {
+      if (e.target === this) this.close();
+    });
+
+    // Service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 </html>

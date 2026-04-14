@@ -6,11 +6,11 @@
           <span style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
             <strong style="font-family:var(--font-display)"><%= r.place %></strong>
             <% if (r.start_date || r.end_date) { %>
-              <span class="type-badge"><%= r.start_date ?? '?' %> – <%= r.end_date ?? 'present' %></span>
+              <span class="type-badge"><%= fmtDate(r.start_date) || '?' %> – <%= fmtDate(r.end_date) || 'present' %></span>
             <% } %>
             <span class="type-badge"><%= r.type %></span>
           </span>
-          <button class="small outline" data-on:click="@delete('/api/residences/<%= r.id %>').then(()=>@get('/api/people/<%= it.personId %>/residences'))">Remove</button>
+          <button class="small outline" data-on:click="@delete('/api/residences/<%= r.id %>')">Remove</button>
         </li>
       <% } %>
     </ul>
@@ -21,12 +21,9 @@
   <details style="margin-top:1rem">
     <summary>Add Residence / Migration</summary>
     <div>
-      <form
-        data-signals='{"res_place":"","res_type":"residence","res_start":"","res_end":"","res_notes":"","person_id":"<%= it.personId %>"}'
-        data-on:submit.prevent="@post('/api/residences').then(()=>@get('/api/people/<%= it.personId %>/residences'))"
-      >
+      <div data-signals='{"res_place":"","res_type":"residence","res_start":"","res_end":"","res_notes":"","person_id":"<%= it.personId %>"}'>
         <label>Place</label>
-        <input type="text" required data-bind="res_place" placeholder="City, State, Country" />
+        <input type="text" data-bind="res_place" placeholder="City, State, Country" />
 
         <label>Type</label>
         <select data-bind="res_type">
@@ -47,9 +44,9 @@
         </div>
 
         <div class="form-actions">
-          <button type="submit">Add</button>
+          <button type="button" data-on:click="@post('/api/residences')">Add</button>
         </div>
-      </form>
+      </div>
     </div>
   </details>
 </div>

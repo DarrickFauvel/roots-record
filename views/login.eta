@@ -3,15 +3,16 @@
     <h1>Welcome back</h1>
     <p class="auth-subtitle">Sign in to access your family records</p>
 
-    <form
-      data-signals='{"email":"","password":""}'
-      data-on:submit.prevent="@post('/api/auth/sign-in/email', {contentType:'application/json'}).then((r)=>{ if(r.ok) window.location='/'; })"
-    >
+    <% if (it.error) { %>
+      <p style="color:var(--rust);font-size:.875rem;margin-bottom:.5rem">Invalid email or password.</p>
+    <% } %>
+
+    <form method="POST" action="/auth/login">
       <label for="email">Email address</label>
-      <input id="email" type="email" name="email" autocomplete="email" required data-bind="email" placeholder="you@example.com" />
+      <input id="email" type="email" name="email" autocomplete="email" required placeholder="you@example.com" />
 
       <label for="password">Password</label>
-      <input id="password" type="password" name="password" autocomplete="current-password" required data-bind="password" placeholder="••••••••" />
+      <input id="password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••" />
 
       <div style="margin-top:1.75rem">
         <button type="submit" style="width:100%;justify-content:center">Sign In</button>

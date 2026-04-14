@@ -2,9 +2,9 @@
   <a href="/people/<%= it.p.id %>">
     <strong><%= it.p.given_name %> <%= it.p.surname ?? "" %></strong>
     <span class="person-meta">
-      <% if (it.p.birth_date) { %><span>b. <%= it.p.birth_date %></span><% } %>
+      <% if (it.p.birth_date) { %><span>b. <%= fmtDate(it.p.birth_date) %></span><% } %>
       <% if (it.p.birth_place) { %><span><%= it.p.birth_place %></span><% } %>
-      <% if (it.p.death_date) { %><span>d. <%= it.p.death_date %></span><% } %>
+      <% if (it.p.death_date) { %><span>d. <%= fmtDate(it.p.death_date) %></span><% } %>
     </span>
   </a>
 </li>

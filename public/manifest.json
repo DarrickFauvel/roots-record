@@ -1,0 +1,15 @@
+{
+  "name": "Roots Record",
+  "short_name": "Roots",
+  "description": "Family vital records — preserve history across generations",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1C1410",
+  "theme_color": "#1C1410",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "lang": "en-US"
+}

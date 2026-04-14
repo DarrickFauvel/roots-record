@@ -4,7 +4,9 @@
 CREATE TABLE IF NOT EXISTS people (
   id TEXT PRIMARY KEY,
   given_name TEXT NOT NULL,
+  middle_name TEXT,
   surname TEXT,
+  maiden_name TEXT,
   sex TEXT CHECK(sex IN ('M','F','other','unknown')) DEFAULT 'unknown',
   birth_date TEXT,
   birth_place TEXT,

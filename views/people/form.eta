@@ -2,42 +2,37 @@
   <h1><%= it.person ? "Edit Person" : "Add Person" %></h1>
 
   <% const p = it.person; %>
-  <% const action = p ? `/api/people/${p.id}` : "/api/people"; %>
-  <% const method = p ? "@put" : "@post"; %>
 
-  <form
-    data-signals='<%~ JSON.stringify({
-      given_name: p?.given_name ?? "",
-      surname: p?.surname ?? "",
-      sex: p?.sex ?? "unknown",
-      birth_date: p?.birth_date ?? "",
-      birth_place: p?.birth_place ?? "",
-      death_date: p?.death_date ?? "",
-      death_place: p?.death_place ?? "",
-      death_cause: p?.death_cause ?? "",
-      notes: p?.notes ?? ""
-    }) %>'
-    data-on:submit.prevent="<%~ method %>('<%= action %>').then((r)=>{ if(r.ok) window.location=r.url||'/people'; })"
-    id="person-form"
-  >
+  <form method="POST" action="<%= p ? `/people/${p.id}/edit` : "/people/new" %>">
     <div class="form-grid">
       <div>
         <label for="given_name">Given Name *</label>
-        <input id="given_name" type="text" required data-bind="given_name" />
+        <input id="given_name" type="text" name="given_name" required value="<%= p?.given_name ?? "" %>" />
       </div>
       <div>
+        <label for="middle_name">Middle Name</label>
+        <input id="middle_name" type="text" name="middle_name" value="<%= p?.middle_name ?? "" %>" />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div>
         <label for="surname">Surname</label>
-        <input id="surname" type="text" data-bind="surname" />
+        <input id="surname" type="text" name="surname" value="<%= p?.surname ?? "" %>" />
+      </div>
+      <div>
+        <label for="maiden_name">Maiden Name</label>
+        <input id="maiden_name" type="text" name="maiden_name" value="<%= p?.maiden_name ?? "" %>" />
       </div>
     </div>
 
     <div>
       <label for="sex">Sex</label>
-      <select id="sex" data-bind="sex">
-        <option value="unknown">Unknown</option>
-        <option value="M">Male</option>
-        <option value="F">Female</option>
-        <option value="other">Other</option>
+      <select id="sex" name="sex">
+        <option value="unknown" <%= (p?.sex ?? 'unknown') === 'unknown' ? 'selected' : '' %>>Unknown</option>
+        <option value="M" <%= p?.sex === 'M' ? 'selected' : '' %>>Male</option>
+        <option value="F" <%= p?.sex === 'F' ? 'selected' : '' %>>Female</option>
+        <option value="other" <%= p?.sex === 'other' ? 'selected' : '' %>>Other</option>
       </select>
     </div>
 
@@ -46,11 +41,11 @@
       <div class="form-grid">
         <div>
           <label for="birth_date">Date</label>
-          <input id="birth_date" type="text" placeholder="YYYY-MM-DD" data-bind="birth_date" />
+          <input id="birth_date" type="text" name="birth_date" placeholder="MM/DD/YYYY" value="<%= fmtDate(p?.birth_date) %>" />
         </div>
         <div>
           <label for="birth_place">Place</label>
-          <input id="birth_place" type="text" placeholder="City, State, Country" data-bind="birth_place" />
+          <input id="birth_place" type="text" name="birth_place" placeholder="City, State, Country" value="<%= p?.birth_place ?? "" %>" />
         </div>
       </div>
     </fieldset>
@@ -60,19 +55,19 @@
       <div class="form-grid">
         <div>
           <label for="death_date">Date</label>
-          <input id="death_date" type="text" placeholder="YYYY-MM-DD" data-bind="death_date" />
+          <input id="death_date" type="text" name="death_date" placeholder="MM/DD/YYYY" value="<%= fmtDate(p?.death_date) %>" />
         </div>
         <div>
           <label for="death_place">Place</label>
-          <input id="death_place" type="text" placeholder="City, State, Country" data-bind="death_place" />
+          <input id="death_place" type="text" name="death_place" placeholder="City, State, Country" value="<%= p?.death_place ?? "" %>" />
         </div>
       </div>
       <label for="death_cause">Cause of Death</label>
-      <input id="death_cause" type="text" data-bind="death_cause" />
+      <input id="death_cause" type="text" name="death_cause" value="<%= p?.death_cause ?? "" %>" />
     </fieldset>
 
     <label for="notes">Notes</label>
-    <textarea id="notes" rows="4" data-bind="notes"></textarea>
+    <textarea id="notes" name="notes" rows="4"><%= p?.notes ?? "" %></textarea>
 
     <div class="form-actions">
       <button type="submit"><%= p ? "Save Changes" : "Add Person" %></button>

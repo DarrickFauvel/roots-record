@@ -9,7 +9,7 @@
       <option value="">— Select a person —</option>
       <% for (const p of it.people) { %>
         <option value="<%= p.id %>" <% if (p.id === it.rootId) { %>selected<% } %>>
-          <%= p.given_name %> <%= p.surname ?? "" %><% if (p.birth_date) { %> (<%= p.birth_date.slice(0,4) %>)<% } %>
+          <%= p.given_name %> <%= p.surname ?? "" %><% if (p.birth_date) { %> (<%= fmtYear(p.birth_date) %>)<% } %>
         </option>
       <% } %>
     </select>
@@ -18,7 +18,7 @@
 
 <div id="tree-container" class="tree-container">
   <% if (it.rootId && it.tree) { %>
-    <ul><%~ includeFile("partials/tree-node", { node: it.tree }) %></ul>
+    <ul><%~ include("../partials/tree-node", { node: it.tree }) %></ul>
   <% } else { %>
     <p class="tree-placeholder">Select a person above to view their descendants.</p>
   <% } %>

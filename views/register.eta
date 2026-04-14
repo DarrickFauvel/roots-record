@@ -3,18 +3,19 @@
     <h1>Create account</h1>
     <p class="auth-subtitle">Start building your family archive</p>
 
-    <form
-      data-signals='{"name":"","email":"","password":""}'
-      data-on:submit.prevent="@post('/api/auth/sign-up/email', {contentType:'application/json'}).then((r)=>{ if(r.ok) window.location='/login'; })"
-    >
+    <% if (it.error) { %>
+      <p style="color:var(--rust);font-size:.875rem;margin-bottom:.5rem"><%= it.error %></p>
+    <% } %>
+
+    <form method="POST" action="/auth/register">
       <label for="name">Full name</label>
-      <input id="name" type="text" name="name" autocomplete="name" required data-bind="name" placeholder="Your name" />
+      <input id="name" type="text" name="name" autocomplete="name" required placeholder="Your name" />
 
       <label for="email">Email address</label>
-      <input id="email" type="email" name="email" autocomplete="email" required data-bind="email" placeholder="you@example.com" />
+      <input id="email" type="email" name="email" autocomplete="email" required placeholder="you@example.com" />
 
       <label for="password">Password</label>
-      <input id="password" type="password" name="password" autocomplete="new-password" required minlength="8" data-bind="password" placeholder="8+ characters" />
+      <input id="password" type="password" name="password" autocomplete="new-password" required minlength="8" placeholder="8+ characters" />
 
       <div style="margin-top:1.75rem">
         <button type="submit" style="width:100%;justify-content:center">Create Account</button>
