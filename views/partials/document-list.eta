@@ -3,8 +3,8 @@
     <ul class="doc-grid">
       <% for (const d of it.documents) { %>
         <li class="doc-card">
-          <a href="<%= d.cloudinary_url %>" target="_blank" rel="noopener">
-            <img src="<%= d.cloudinary_url.replace('/upload/', '/upload/w_200,h_200,c_thumb/') %>" alt="<%= d.title %>" loading="lazy" />
+          <a href="<%= d.signed_url %>" target="_blank" rel="noopener">
+            <img src="<%= d.signed_thumb_url %>" alt="<%= d.title %>" loading="lazy" />
             <span><%= d.title %></span>
             <small><%= d.doc_type.replace(/_/g, " ") %></small>
           </a>

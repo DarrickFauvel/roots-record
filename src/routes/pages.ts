@@ -4,6 +4,7 @@ import { requireAuth } from "../lib/auth-middleware.js";
 import { renderPage } from "../lib/render.js";
 import { auth } from "../auth.js";
 import { eta } from "../server.js";
+import { getSignedUrl } from "../lib/cloudinary.js";
 
 export const pagesRouter = Router();
 
@@ -198,7 +199,11 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
     children: children.rows,
     siblings: siblings.rows,
     residences: residences.rows,
-    documents: documents.rows,
+    documents: documents.rows.map((d) => ({
+      ...d,
+      signed_url: getSignedUrl(String(d.cloudinary_public_id)),
+      signed_thumb_url: getSignedUrl(String(d.cloudinary_public_id), "w_200,h_200,c_thumb"),
+    })),
     allPeople: allPeople.rows,
   });
 });

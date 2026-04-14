@@ -16,6 +16,7 @@ export async function uploadDocument(
         folder: options.folder ?? "roots-record",
         public_id: options.public_id,
         resource_type: "auto",
+        type: "authenticated",
       },
       (error, result) => {
         if (error || !result) return reject(error ?? new Error("Upload failed"));
@@ -26,6 +27,15 @@ export async function uploadDocument(
   });
 }
 
+export function getSignedUrl(publicId: string, transformation?: string): string {
+  return cloudinary.url(publicId, {
+    secure: true,
+    sign_url: true,
+    type: "authenticated",
+    ...(transformation ? { raw_transformation: transformation } : {}),
+  });
+}
+
 export async function deleteDocument(publicId: string): Promise<void> {
-  await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+  await cloudinary.uploader.destroy(publicId, { resource_type: "image", type: "authenticated" });
 }
