@@ -1,3 +1,37 @@
+<% if (it.stats.peopleCount === 0) { %>
+
+<div class="welcome-view">
+  <div class="welcome-mark">R</div>
+  <h1>Welcome to<br><em>Roots Record</em></h1>
+  <p class="welcome-sub">Your family's living archive — preserve vital records, relationships, and documents across generations.</p>
+  <div class="welcome-steps">
+    <div class="welcome-step">
+      <span class="welcome-step-num">1</span>
+      <div>
+        <strong>Add a person</strong>
+        <span>Start with yourself or a family member</span>
+      </div>
+    </div>
+    <div class="welcome-step">
+      <span class="welcome-step-num">2</span>
+      <div>
+        <strong>Link relationships</strong>
+        <span>Connect parents, spouses, and children</span>
+      </div>
+    </div>
+    <div class="welcome-step">
+      <span class="welcome-step-num">3</span>
+      <div>
+        <strong>Attach documents</strong>
+        <span>Upload birth certificates, photos, and more</span>
+      </div>
+    </div>
+  </div>
+  <a href="/people/new" role="button" class="welcome-cta">Add Your First Person</a>
+</div>
+
+<% } else { %>
+
 <div class="home-hero">
   <h1>Your family's<br><em>living archive</em></h1>
   <div class="home-actions">
@@ -24,21 +58,19 @@
 
 <div class="recent-section">
   <h2>Recently Added</h2>
-  <% if (it.recent.length === 0) { %>
-    <p style="color:var(--muted); font-style:italic;">No records yet. <a href="/people/new">Add the first person.</a></p>
-  <% } else { %>
-    <ul class="person-list">
-      <% for (const p of it.recent) { %>
-        <li class="person-card">
-          <a href="/people/<%= p.id %>">
-            <strong><%= p.given_name %><%= p.middle_name ? ` ${p.middle_name[0]}.` : "" %> <%= p.surname ?? "" %></strong>
-            <span class="person-meta">
-              <% if (p.birth_date) { %><span>b. <%= fmtDate(p.birth_date) %></span><% } %>
-              <% if (p.death_date) { %><span>d. <%= fmtDate(p.death_date) %></span><% } %>
-            </span>
-          </a>
-        </li>
-      <% } %>
-    </ul>
-  <% } %>
+  <ul class="person-list">
+    <% for (const p of it.recent) { %>
+      <li class="person-card">
+        <a href="/people/<%= p.id %>">
+          <strong><%= p.given_name %><%= p.middle_name ? ` ${p.middle_name[0]}.` : "" %> <%= p.surname ?? "" %></strong>
+          <span class="person-meta">
+            <% if (p.birth_date) { %><span>b. <%= fmtDate(p.birth_date) %></span><% } %>
+            <% if (p.death_date) { %><span>d. <%= fmtDate(p.death_date) %></span><% } %>
+          </span>
+        </a>
+      </li>
+    <% } %>
+  </ul>
 </div>
+
+<% } %>

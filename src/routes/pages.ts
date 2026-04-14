@@ -48,8 +48,24 @@ pagesRouter.post("/auth/register", async (req, res) => {
   res.redirect("/");
 });
 
-// Protected routes
-pagesRouter.get("/", requireAuth, async (_req, res) => {
+// Root — public landing for guests, dashboard for authenticated users
+pagesRouter.get("/", async (req, res) => {
+  const { fromNodeHeaders } = await import("better-auth/node");
+  const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+
+  if (!session) {
+    const body = await eta.renderAsync("landing", {});
+    const page = await eta.renderAsync("layout", {
+      title: "Roots Record — Your Family's Living Archive",
+      user: null,
+      body,
+      breadcrumbs: [],
+    });
+    res.send(page);
+    return;
+  }
+
+  res.locals.user = session.user;
   const [peopleCount, relCount, docCount, recent] = await Promise.all([
     db.execute("SELECT COUNT(*) as c FROM people").then((r) => Number(r.rows[0].c)),
     db.execute("SELECT COUNT(*) as c FROM relationships").then((r) => Number(r.rows[0].c)),
@@ -58,7 +74,7 @@ pagesRouter.get("/", requireAuth, async (_req, res) => {
   ]);
   await renderPage(res, "home", {
     title: "Home — Roots Record",
-    user: res.locals.user,
+    user: session.user,
     breadcrumbs: [],
     stats: { peopleCount, relationshipCount: relCount, documentCount: docCount },
     recent: recent.rows,
