@@ -14,7 +14,7 @@
   <title><%= it.title ?? "Roots Record" %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400;1,700&family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.8/bundles/datastar.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -37,16 +37,26 @@
           <a href="/auth/sign-out" class="sign-out">Sign out</a>
         </div>
         <div class="nav-end">
+          <div class="theme-wrap">
+            <button class="theme-btn" id="theme-btn" aria-label="Choose color theme" title="Choose theme" onclick="toggleThemePicker(event)"></button>
+            <div class="theme-picker" id="theme-picker">
+              <button class="theme-swatch" data-theme="forest"  style="--sw:#166534" title="Forest"  onclick="pickTheme('forest')"></button>
+              <button class="theme-swatch" data-theme="ocean"   style="--sw:#1D4ED8" title="Ocean"   onclick="pickTheme('ocean')"></button>
+              <button class="theme-swatch" data-theme="ember"   style="--sw:#B45309" title="Ember"   onclick="pickTheme('ember')"></button>
+              <button class="theme-swatch" data-theme="plum"    style="--sw:#6D28D9" title="Plum"    onclick="pickTheme('plum')"></button>
+              <button class="theme-swatch" data-theme="teal"    style="--sw:#0F766E" title="Teal"    onclick="pickTheme('teal')"></button>
+            </div>
+          </div>
           <button class="nav-qr-btn" onclick="showQR()" aria-label="QR Code" title="QR Code">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
               <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
             </svg>
           </button>
-          <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu"
+          <button class="nav-avatar" id="nav-hamburger" aria-label="Toggle menu"
                 data-class-is-open="navOpen"
                 data-on:click="$navOpen = !$navOpen">
-            <span></span><span></span><span></span>
+            <%= (it.user?.name ?? it.user?.email ?? '?')[0].toUpperCase() %>
           </button>
         </div>
       <% } %>
@@ -140,6 +150,28 @@
     document.getElementById('qr-dialog').addEventListener('click', function(e) {
       if (e.target === this) this.close();
     });
+
+    // Theme picker
+    const _themes = ['forest','ocean','ember','plum','teal'];
+    function applyTheme(name) {
+      document.documentElement.setAttribute('data-theme', name);
+      localStorage.setItem('rr-theme', name);
+      document.querySelectorAll('.theme-swatch').forEach(s => {
+        s.classList.toggle('is-active', s.dataset.theme === name);
+      });
+    }
+    function pickTheme(name) {
+      applyTheme(name);
+      document.getElementById('theme-picker').classList.remove('is-open');
+    }
+    function toggleThemePicker(e) {
+      e.stopPropagation();
+      document.getElementById('theme-picker').classList.toggle('is-open');
+    }
+    document.addEventListener('click', () => {
+      document.getElementById('theme-picker')?.classList.remove('is-open');
+    });
+    applyTheme(localStorage.getItem('rr-theme') || 'forest');
 
     // Service worker
     if ('serviceWorker' in navigator) {
