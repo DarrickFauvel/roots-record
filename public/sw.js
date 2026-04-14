@@ -1,12 +1,8 @@
-const CACHE = 'roots-record-v1';
-const STATIC = [
-  '/styles.css',
-  '/icon.svg',
-  '/manifest.json',
-];
+const CACHE = 'roots-record-v2';
+const PRECACHE = ['/icon.svg', '/manifest.json'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
@@ -23,11 +19,22 @@ self.addEventListener('fetch', e => {
   const { request: req } = e;
   const url = new URL(req.url);
 
-  // Let non-GET and cross-origin requests pass through
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
-  // Static assets: cache-first
-  if (url.pathname.match(/\.(css|js|svg|png|jpg|webp|woff2?)$/)) {
+  // CSS/JS: network-first — always fetch fresh, fall back to cache when offline
+  if (url.pathname.match(/\.(css|js)$/)) {
+    e.respondWith(
+      fetch(req).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(req, clone));
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Static assets (images, fonts, icons): cache-first
+  if (url.pathname.match(/\.(svg|png|jpg|webp|woff2?)$/)) {
     e.respondWith(
       caches.match(req).then(hit => hit || fetch(req).then(res => {
         const clone = res.clone();
