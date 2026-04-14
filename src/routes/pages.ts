@@ -53,7 +53,7 @@ pagesRouter.get("/", requireAuth, async (_req, res) => {
     db.execute("SELECT COUNT(*) as c FROM people").then((r) => Number(r.rows[0].c)),
     db.execute("SELECT COUNT(*) as c FROM relationships").then((r) => Number(r.rows[0].c)),
     db.execute("SELECT COUNT(*) as c FROM documents").then((r) => Number(r.rows[0].c)),
-    db.execute("SELECT id, given_name, surname, birth_date, death_date FROM people ORDER BY created_at DESC LIMIT 10"),
+    db.execute("SELECT id, given_name, middle_name, surname, birth_date, death_date FROM people ORDER BY created_at DESC LIMIT 10"),
   ]);
   await renderPage(res, "home", {
     title: "Home — Roots Record",
@@ -66,7 +66,7 @@ pagesRouter.get("/", requireAuth, async (_req, res) => {
 
 pagesRouter.get("/people", requireAuth, async (_req, res) => {
   const result = await db.execute(
-    "SELECT id, given_name, surname, birth_date, birth_place, death_date, death_place FROM people ORDER BY surname, given_name"
+    "SELECT id, given_name, middle_name, surname, birth_date, birth_place, death_date, death_place FROM people ORDER BY surname, given_name"
   );
   await renderPage(res, "people/list", {
     title: "People — Roots Record",
@@ -150,26 +150,26 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
     await Promise.all([
       db.execute({ sql: "SELECT * FROM people WHERE id = ?", args: [pid] }),
       db.execute({
-        sql: `SELECT p.id, p.given_name, p.surname, r.id as rel_id
+        sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, r.id as rel_id
               FROM relationships r JOIN people p ON r.person1_id = p.id
               WHERE r.type = 'parent_child' AND r.person2_id = ?`,
         args: [pid],
       }),
       db.execute({
-        sql: `SELECT p.id, p.given_name, p.surname, r.id as rel_id, r.start_date
+        sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, r.id as rel_id, r.start_date
               FROM relationships r
               JOIN people p ON (CASE WHEN r.person1_id = ? THEN r.person2_id ELSE r.person1_id END = p.id)
               WHERE r.type = 'spouse' AND (r.person1_id = ? OR r.person2_id = ?)`,
         args: [pid, pid, pid],
       }),
       db.execute({
-        sql: `SELECT p.id, p.given_name, p.surname, r.id as rel_id
+        sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, r.id as rel_id
               FROM relationships r JOIN people p ON r.person2_id = p.id
               WHERE r.type = 'parent_child' AND r.person1_id = ?`,
         args: [pid],
       }),
       db.execute({
-        sql: `SELECT DISTINCT p.id, p.given_name, p.surname
+        sql: `SELECT DISTINCT p.id, p.given_name, p.middle_name, p.surname
               FROM relationships r1
               JOIN relationships r2 ON r1.person1_id = r2.person1_id AND r1.type = 'parent_child' AND r2.type = 'parent_child'
               JOIN people p ON r2.person2_id = p.id
@@ -178,7 +178,7 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
       }),
       db.execute({ sql: "SELECT * FROM residences WHERE person_id = ? ORDER BY start_date", args: [pid] }),
       db.execute({ sql: "SELECT * FROM documents WHERE person_id = ? ORDER BY created_at DESC", args: [pid] }),
-      db.execute("SELECT id, given_name, surname FROM people ORDER BY surname, given_name"),
+      db.execute("SELECT id, given_name, middle_name, surname FROM people ORDER BY surname, given_name"),
     ]);
 
   if (personResult.rows.length === 0) {
@@ -205,7 +205,7 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
 
 pagesRouter.get("/tree", requireAuth, async (req, res) => {
   const people = await db.execute(
-    "SELECT id, given_name, surname, birth_date FROM people ORDER BY surname, given_name"
+    "SELECT id, given_name, middle_name, surname, birth_date FROM people ORDER BY surname, given_name"
   );
   const rootId = req.query.root as string | undefined;
   let tree = null;

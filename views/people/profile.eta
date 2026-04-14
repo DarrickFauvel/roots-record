@@ -8,7 +8,7 @@
   </div>
   <div style="display:flex;gap:.5rem;flex-wrap:wrap">
     <a href="/people/<%= p.id %>/edit" role="button" class="outline">Edit</a>
-    <button class="outline danger small" data-on:click="confirm('Delete this person?') && @delete('/api/people/<%= p.id %>').then(()=>window.location='/people')">Delete</button>
+    <button class="outline danger small" data-on:click="confirmAction('Permanently delete this person and all their records?', () => @delete('/api/people/<%= p.id %>').then(()=>window.location='/people'))">Delete</button>
   </div>
 </div>
 

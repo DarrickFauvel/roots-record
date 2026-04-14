@@ -9,7 +9,7 @@
       <option value="">— Select a person —</option>
       <% for (const p of it.people) { %>
         <option value="<%= p.id %>" <% if (p.id === it.rootId) { %>selected<% } %>>
-          <%= p.given_name %> <%= p.surname ?? "" %><% if (p.birth_date) { %> (<%= fmtYear(p.birth_date) %>)<% } %>
+          <%= p.given_name %><%= p.middle_name ? ` ${p.middle_name[0]}.` : "" %> <%= p.surname ?? "" %><% if (p.birth_date) { %> (<%= fmtYear(p.birth_date) %>)<% } %>
         </option>
       <% } %>
     </select>

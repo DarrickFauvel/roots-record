@@ -188,7 +188,7 @@ small { font-size: 0.78rem; font-family: var(--font-mono); color: var(--muted); 
   transition: all .15s;
 }
 .nav-qr-btn:hover { border-color: var(--gold); color: var(--gold); background: transparent; transform: none; box-shadow: none; }
-.nav-qr-btn--mobile { display: none; width: 40px; height: 40px; padding: 0; align-items: center; justify-content: center; }
+.nav-qr-btn--mobile { display: none; width: 40px; height: 40px; padding: 0; align-items: center; justify-content: center; margin-left: auto; }
 @media (max-width: 680px) { .nav-qr-btn--mobile { display: flex; } }
 
 /* ─── QR Dialog ──────────────────────────────────────────────────────────── */
@@ -219,6 +219,35 @@ small { font-size: 0.78rem; font-family: var(--font-mono); color: var(--muted); 
   margin: 0;
 }
 #qr-img img { display: block; border-radius: var(--radius); }
+
+/* ─── Confirm Dialog ─────────────────────────────────────────────────────── */
+#confirm-dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  background: var(--paper);
+  box-shadow: var(--shadow-lg);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  margin: 0;
+  max-width: 360px;
+  width: calc(100% - 2rem);
+}
+#confirm-dialog::backdrop { background: rgba(0,0,0,.5); }
+.confirm-dialog-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.75rem 2rem;
+  text-align: center;
+}
+.confirm-icon { color: #c0392b; flex-shrink: 0; }
+.confirm-message { margin: 0; font-family: var(--font-display); font-size: 1rem; }
+.confirm-actions { display: flex; gap: .75rem; justify-content: center; width: 100%; }
+.confirm-actions button { flex: 1; }
 
 /* ─── Main & Footer ──────────────────────────────────────────────────────── */
 .site-main {
@@ -943,7 +972,8 @@ details > :not(summary) { padding: 1rem 0.875rem; }
   .main-nav { display: none; }
   .user-menu { display: none; }
   .nav-hamburger { display: flex; }
-  .header-inner { gap: 0.75rem; padding: 0 1rem; }
+  .header-inner { gap: 0.5rem; padding: 0 1rem; }
+  .nav-qr-btn--mobile { margin-left: auto; margin-right: 0; }
 
   /* Layout */
   .site-main { padding: 1.5rem 1rem; }

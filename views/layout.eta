@@ -98,7 +98,34 @@
     </div>
   </dialog>
 
+  <dialog id="confirm-dialog">
+    <div class="confirm-dialog-inner">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="confirm-icon" aria-hidden="true">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <p id="confirm-message" class="confirm-message">Are you sure?</p>
+      <div class="confirm-actions">
+        <button class="outline" onclick="document.getElementById('confirm-dialog').close()">Cancel</button>
+        <button class="danger" id="confirm-ok">Delete</button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
+    // Confirm modal
+    function confirmAction(message, onConfirm) {
+      const dialog = document.getElementById('confirm-dialog');
+      document.getElementById('confirm-message').textContent = message;
+      const ok = document.getElementById('confirm-ok');
+      const newOk = ok.cloneNode(true);
+      ok.parentNode.replaceChild(newOk, ok);
+      newOk.addEventListener('click', () => { dialog.close(); onConfirm(); });
+      dialog.showModal();
+    }
+    document.getElementById('confirm-dialog').addEventListener('click', function(e) {
+      if (e.target === this) this.close();
+    });
+
     // QR code
     let _qr;
     function showQR() {

@@ -4,8 +4,8 @@
     <ul class="rel-list">
       <% for (const r of it.parents) { %>
         <li>
-          <a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a>
-          <button class="small outline" data-on:click="@delete('/api/relationships/<%= r.rel_id %>')">Remove</button>
+          <a href="/people/<%= r.id %>"><%= r.given_name %><%= r.middle_name ? ` ${r.middle_name[0]}.` : "" %> <%= r.surname ?? "" %></a>
+          <button class="small outline" data-on:click="confirmAction('Remove this relationship?', () => @delete('/api/relationships/<%= r.rel_id %>'))">Remove</button>
         </li>
       <% } %>
     </ul>
@@ -17,10 +17,10 @@
       <% for (const r of it.spouses) { %>
         <li>
           <span style="display:flex;gap:.5rem;align-items:center">
-            <a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a>
+            <a href="/people/<%= r.id %>"><%= r.given_name %><%= r.middle_name ? ` ${r.middle_name[0]}.` : "" %> <%= r.surname ?? "" %></a>
             <% if (r.start_date) { %><span class="type-badge">m. <%= fmtDate(r.start_date) %></span><% } %>
           </span>
-          <button class="small outline" data-on:click="@delete('/api/relationships/<%= r.rel_id %>')">Remove</button>
+          <button class="small outline" data-on:click="confirmAction('Remove this relationship?', () => @delete('/api/relationships/<%= r.rel_id %>'))">Remove</button>
         </li>
       <% } %>
     </ul>
@@ -31,8 +31,8 @@
     <ul class="rel-list">
       <% for (const r of it.children) { %>
         <li>
-          <a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a>
-          <button class="small outline" data-on:click="@delete('/api/relationships/<%= r.rel_id %>')">Remove</button>
+          <a href="/people/<%= r.id %>"><%= r.given_name %><%= r.middle_name ? ` ${r.middle_name[0]}.` : "" %> <%= r.surname ?? "" %></a>
+          <button class="small outline" data-on:click="confirmAction('Remove this relationship?', () => @delete('/api/relationships/<%= r.rel_id %>'))">Remove</button>
         </li>
       <% } %>
     </ul>
@@ -42,7 +42,7 @@
     <h3>Siblings</h3>
     <ul class="rel-list">
       <% for (const r of it.siblings) { %>
-        <li><a href="/people/<%= r.id %>"><%= r.given_name %> <%= r.surname ?? "" %></a></li>
+        <li><a href="/people/<%= r.id %>"><%= r.given_name %><%= r.middle_name ? ` ${r.middle_name[0]}.` : "" %> <%= r.surname ?? "" %></a></li>
       <% } %>
     </ul>
   <% } %>

@@ -10,7 +10,7 @@
             <% } %>
             <span class="type-badge"><%= r.type %></span>
           </span>
-          <button class="small outline" data-on:click="@delete('/api/residences/<%= r.id %>')">Remove</button>
+          <button class="small outline" data-on:click="confirmAction('Remove this residence?', () => @delete('/api/residences/<%= r.id %>'))">Remove</button>
         </li>
       <% } %>
     </ul>

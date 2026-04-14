@@ -3,10 +3,11 @@ import type { Client } from "@libsql/client";
 export interface PersonNode {
   id: string;
   given_name: string;
+  middle_name: string | null;
   surname: string | null;
   birth_date: string | null;
   death_date: string | null;
-  spouses: { id: string; given_name: string; surname: string | null }[];
+  spouses: { id: string; given_name: string; middle_name: string | null; surname: string | null }[];
   children: PersonNode[];
 }
 
@@ -23,7 +24,7 @@ export async function buildDescendantTree(
   visited.add(rootId);
 
   const personResult = await db.execute({
-    sql: "SELECT id, given_name, surname, birth_date, death_date FROM people WHERE id = ?",
+    sql: "SELECT id, given_name, middle_name, surname, birth_date, death_date FROM people WHERE id = ?",
     args: [rootId],
   });
   if (personResult.rows.length === 0) return null;
@@ -31,7 +32,7 @@ export async function buildDescendantTree(
 
   // Fetch spouses
   const spouseResult = await db.execute({
-    sql: `SELECT p.id, p.given_name, p.surname
+    sql: `SELECT p.id, p.given_name, p.middle_name, p.surname
           FROM relationships r
           JOIN people p ON (
             CASE WHEN r.person1_id = ? THEN r.person2_id ELSE r.person1_id END = p.id
@@ -57,12 +58,14 @@ export async function buildDescendantTree(
   return {
     id: String(row.id),
     given_name: String(row.given_name),
+    middle_name: row.middle_name ? String(row.middle_name) : null,
     surname: row.surname ? String(row.surname) : null,
     birth_date: row.birth_date ? String(row.birth_date) : null,
     death_date: row.death_date ? String(row.death_date) : null,
     spouses: spouseResult.rows.map((s) => ({
       id: String(s.id),
       given_name: String(s.given_name),
+      middle_name: s.middle_name ? String(s.middle_name) : null,
       surname: s.surname ? String(s.surname) : null,
     })),
     children,

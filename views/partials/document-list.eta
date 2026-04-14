@@ -10,7 +10,7 @@
           </a>
           <button
             class="small outline"
-            data-on:click="confirm('Delete document?') && @delete('/api/documents/<%= d.id %>').then(()=>@get('/api/people/<%= it.personId %>/documents'))"
+            data-on:click="confirmAction('Delete this document? This cannot be undone.', () => @delete('/api/documents/<%= d.id %>').then(()=>@get('/api/people/<%= it.personId %>/documents')))"
           >Delete</button>
         </li>
       <% } %>

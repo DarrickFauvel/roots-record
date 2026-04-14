@@ -31,7 +31,7 @@
       <% for (const p of it.recent) { %>
         <li class="person-card">
           <a href="/people/<%= p.id %>">
-            <strong><%= p.given_name %> <%= p.surname ?? "" %></strong>
+            <strong><%= p.given_name %><%= p.middle_name ? ` ${p.middle_name[0]}.` : "" %> <%= p.surname ?? "" %></strong>
             <span class="person-meta">
               <% if (p.birth_date) { %><span>b. <%= fmtDate(p.birth_date) %></span><% } %>
               <% if (p.death_date) { %><span>d. <%= fmtDate(p.death_date) %></span><% } %>

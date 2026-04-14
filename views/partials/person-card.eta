@@ -1,6 +1,6 @@
 <li id="person-<%= it.p.id %>" class="person-card">
   <a href="/people/<%= it.p.id %>">
-    <strong><%= it.p.given_name %> <%= it.p.surname ?? "" %></strong>
+    <strong><%= it.p.given_name %><%= it.p.middle_name ? ` ${it.p.middle_name[0]}.` : "" %> <%= it.p.surname ?? "" %></strong>
     <span class="person-meta">
       <% if (it.p.birth_date) { %><span>b. <%= fmtDate(it.p.birth_date) %></span><% } %>
       <% if (it.p.birth_place) { %><span><%= it.p.birth_place %></span><% } %>
