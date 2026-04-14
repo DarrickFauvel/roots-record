@@ -161,8 +161,12 @@ small { font-size: 0.8rem; font-family: var(--font-mono); color: var(--muted); }
 
 .user-name {
   font-size: 0.8rem;
-  color: rgba(255,255,255,.5);
+  color: rgba(255,255,255,.6);
   font-family: var(--font-mono);
+  text-decoration: none;
+  transition: color .15s;
+}
+.user-name:hover { color: rgba(255,255,255,.95); }
 }
 
 .sign-out {
@@ -862,6 +866,70 @@ details > :not(summary) { padding: 1rem 0.875rem; }
   padding-left: 0.75rem;
   margin-left: 0.25rem;
 }
+
+/* ─── Alert banners ──────────────────────────────────────────────────────── */
+.alert {
+  padding: .875rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: .95rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border: 2px solid transparent;
+}
+.alert--success { background: var(--gold-pale); color: var(--gold); border-color: var(--gold-light); }
+.alert--error   { background: #FEF2F2; color: #B91C1C; border-color: #FCA5A5; }
+
+/* ─── Settings page ──────────────────────────────────────────────────────── */
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-section {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-section--danger { border-color: #FECACA; }
+
+.settings-heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+  padding-bottom: .875rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+}
+
+.settings-hint {
+  font-size: .8rem;
+  color: var(--muted);
+  margin: .35rem 0 0;
+}
+
+.settings-account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.settings-account-row div {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+
+.settings-account-row strong { font-size: .95rem; }
+.settings-account-row span  { font-size: .85rem; color: var(--muted); }
+
+.mobile-nav-user-name { color: rgba(255,255,255,.75); font-size: .85rem; }
+.mobile-nav-user-name:hover { color: var(--gold-light); }
 
 /* ─── Public landing ─────────────────────────────────────────────────────── */
 .landing {

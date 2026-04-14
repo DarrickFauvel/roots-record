@@ -33,7 +33,7 @@
           <a href="/people/new" class="nav-link nav-link--cta">Add Person</a>
         </nav>
         <div class="user-menu">
-          <span class="user-name"><%= it.user.name ?? it.user.email %></span>
+          <a href="/profile" class="user-name"><%= it.user.name ?? it.user.email %></a>
           <a href="/auth/sign-out" class="sign-out">Sign out</a>
         </div>
         <div class="nav-end">
@@ -68,7 +68,7 @@
         <a href="/tree" class="mobile-nav-link">Family Tree</a>
         <a href="/people/new" class="mobile-nav-link mobile-nav-link--cta">+ Add Person</a>
         <div class="mobile-nav-user">
-          <span><%= it.user.name ?? it.user.email %></span>
+          <a href="/profile" class="mobile-nav-user-name"><%= it.user.name ?? it.user.email %></a>
           <a href="/auth/sign-out">Sign out</a>
         </div>
       </div>

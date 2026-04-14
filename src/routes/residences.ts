@@ -16,6 +16,11 @@ async function renderResidences(personId: string): Promise<string> {
   return eta.renderAsync("partials/residences", { residences: result.rows, personId });
 }
 
+async function ownsPerson(personId: string, userId: string): Promise<boolean> {
+  const r = await db.execute({ sql: "SELECT id FROM people WHERE id = ? AND created_by = ?", args: [personId, userId] });
+  return r.rows.length > 0;
+}
+
 // POST /api/residences
 residencesRouter.post("/", async (req, res) => {
   const { person_id, res_place, res_type, res_start, res_end, res_notes } =
@@ -23,6 +28,9 @@ residencesRouter.post("/", async (req, res) => {
   if (!person_id || !res_place) {
     res.status(400).json({ error: "person_id and res_place are required" });
     return;
+  }
+  if (!await ownsPerson(person_id, res.locals.user.id)) {
+    res.status(403).json({ error: "Forbidden" }); return;
   }
   await db.execute({
     sql: "INSERT INTO residences (id, person_id, place, type, start_date, end_date, notes) VALUES (?,?,?,?,?,?,?)",
@@ -45,6 +53,9 @@ residencesRouter.put("/:id", async (req, res) => {
   const row = await db.execute({ sql: "SELECT person_id FROM residences WHERE id = ?", args: [req.params.id] });
   const personId = row.rows[0]?.person_id as string | undefined;
   if (!personId) { res.status(404).json({ error: "not found" }); return; }
+  if (!await ownsPerson(personId, res.locals.user.id)) {
+    res.status(403).json({ error: "Forbidden" }); return;
+  }
   await db.execute({
     sql: "UPDATE residences SET place=?, type=?, start_date=?, end_date=? WHERE id=?",
     args: [edit_res_place, edit_res_type || "residence", edit_res_start || null, edit_res_end || null, req.params.id],
@@ -59,8 +70,11 @@ residencesRouter.put("/:id", async (req, res) => {
 residencesRouter.delete("/:id", async (req, res) => {
   const row = await db.execute({ sql: "SELECT person_id FROM residences WHERE id = ?", args: [req.params.id] });
   const personId = row.rows[0]?.person_id as string | undefined;
-  await db.execute({ sql: "DELETE FROM residences WHERE id = ?", args: [req.params.id] });
   if (!personId) { res.json({ ok: true }); return; }
+  if (!await ownsPerson(personId, res.locals.user.id)) {
+    res.status(403).json({ error: "Forbidden" }); return;
+  }
+  await db.execute({ sql: "DELETE FROM residences WHERE id = ?", args: [req.params.id] });
   const html = await renderResidences(personId);
   ServerSentEventGenerator.stream(req, res, (stream) => {
     stream.patchElements(`<div id="residences-section">${html}</div>`);

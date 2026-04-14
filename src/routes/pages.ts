@@ -66,11 +66,12 @@ pagesRouter.get("/", async (req, res) => {
   }
 
   res.locals.user = session.user;
+  const uid = session.user.id;
   const [peopleCount, relCount, docCount, recent] = await Promise.all([
-    db.execute("SELECT COUNT(*) as c FROM people").then((r) => Number(r.rows[0].c)),
-    db.execute("SELECT COUNT(*) as c FROM relationships").then((r) => Number(r.rows[0].c)),
-    db.execute("SELECT COUNT(*) as c FROM documents").then((r) => Number(r.rows[0].c)),
-    db.execute("SELECT id, given_name, middle_name, surname, birth_date, death_date FROM people ORDER BY created_at DESC LIMIT 10"),
+    db.execute({ sql: "SELECT COUNT(*) as c FROM people WHERE created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
+    db.execute({ sql: "SELECT COUNT(*) as c FROM relationships r JOIN people p ON p.id = r.person1_id WHERE p.created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
+    db.execute({ sql: "SELECT COUNT(*) as c FROM documents d JOIN people p ON p.id = d.person_id WHERE p.created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
+    db.execute({ sql: "SELECT id, given_name, middle_name, surname, birth_date, death_date FROM people WHERE created_by = ? ORDER BY created_at DESC LIMIT 10", args: [uid] }),
   ]);
   await renderPage(res, "home", {
     title: "Home — Roots Record",
@@ -81,10 +82,55 @@ pagesRouter.get("/", async (req, res) => {
   });
 });
 
+// ── Profile / Settings ────────────────────────────────────────────────────
+pagesRouter.get("/profile", requireAuth, async (req, res) => {
+  await renderPage(res, "profile", {
+    title: "Account Settings — Roots Record",
+    user: res.locals.user,
+    breadcrumbs: [{ label: "Account Settings" }],
+    success: req.query.success ?? null,
+    error: req.query.error ?? null,
+  });
+});
+
+pagesRouter.post("/profile", requireAuth, async (req, res) => {
+  const { name } = req.body as { name: string };
+  const { fromNodeHeaders } = await import("better-auth/node");
+  try {
+    await auth.api.updateUser({ body: { name: name?.trim() }, headers: fromNodeHeaders(req.headers) });
+    res.redirect("/profile?success=name");
+  } catch {
+    res.redirect("/profile?error=Could+not+update+name");
+  }
+});
+
+pagesRouter.post("/profile/password", requireAuth, async (req, res) => {
+  const { current_password, new_password, confirm_password } = req.body as Record<string, string>;
+  if (!new_password || new_password !== confirm_password) {
+    res.redirect("/profile?error=Passwords+do+not+match");
+    return;
+  }
+  if (new_password.length < 8) {
+    res.redirect("/profile?error=Password+must+be+at+least+8+characters");
+    return;
+  }
+  const { fromNodeHeaders } = await import("better-auth/node");
+  try {
+    await auth.api.changePassword({
+      body: { currentPassword: current_password, newPassword: new_password },
+      headers: fromNodeHeaders(req.headers),
+    });
+    res.redirect("/profile?success=password");
+  } catch {
+    res.redirect("/profile?error=Current+password+is+incorrect");
+  }
+});
+
 pagesRouter.get("/people", requireAuth, async (_req, res) => {
-  const result = await db.execute(
-    "SELECT id, given_name, middle_name, surname, birth_date, birth_place, death_date, death_place FROM people ORDER BY surname, given_name"
-  );
+  const result = await db.execute({
+    sql: "SELECT id, given_name, middle_name, surname, birth_date, birth_place, death_date, death_place FROM people WHERE created_by = ? ORDER BY surname, given_name",
+    args: [res.locals.user.id],
+  });
   await renderPage(res, "people/list", {
     title: "People — Roots Record",
     user: res.locals.user,
@@ -123,8 +169,8 @@ pagesRouter.post("/people/new", requireAuth, async (req, res) => {
 pagesRouter.get("/people/:id/edit", requireAuth, async (req, res) => {
   const id = String(req.params.id);
   const result = await db.execute({
-    sql: "SELECT * FROM people WHERE id = ?",
-    args: [id],
+    sql: "SELECT * FROM people WHERE id = ? AND created_by = ?",
+    args: [id, res.locals.user.id],
   });
   if (result.rows.length === 0) {
     res.status(404).send("Person not found");
@@ -152,20 +198,22 @@ pagesRouter.post("/people/:id/edit", requireAuth, async (req, res) => {
   await db.execute({
     sql: `UPDATE people SET given_name=?, middle_name=?, surname=?, maiden_name=?, sex=?,
           birth_date=?, birth_place=?, death_date=?, death_place=?, death_cause=?, notes=?,
-          updated_at=datetime('now') WHERE id=?`,
+          updated_at=datetime('now') WHERE id=? AND created_by=?`,
     args: [given_name.trim(), middle_name?.trim() || null, surname?.trim() || null,
            maiden_name?.trim() || null, sex || "unknown",
            birth_date || null, birth_place?.trim() || null, death_date || null,
-           death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null, id],
+           death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null,
+           id, res.locals.user.id],
   });
   res.redirect(`/people/${id}`);
 });
 
 pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
   const pid = String(req.params.id);
+  const uid = res.locals.user.id as string;
   const [personResult, parents, spouses, children, siblings, residences, documents, allPeople] =
     await Promise.all([
-      db.execute({ sql: "SELECT * FROM people WHERE id = ?", args: [pid] }),
+      db.execute({ sql: "SELECT * FROM people WHERE id = ? AND created_by = ?", args: [pid, uid] }),
       db.execute({
         sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, r.id as rel_id
               FROM relationships r JOIN people p ON r.person1_id = p.id
@@ -195,7 +243,7 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
       }),
       db.execute({ sql: "SELECT * FROM residences WHERE person_id = ? ORDER BY start_date", args: [pid] }),
       db.execute({ sql: "SELECT * FROM documents WHERE person_id = ? ORDER BY created_at DESC", args: [pid] }),
-      db.execute("SELECT id, given_name, middle_name, surname FROM people ORDER BY surname, given_name"),
+      db.execute({ sql: "SELECT id, given_name, middle_name, surname FROM people WHERE created_by = ? ORDER BY surname, given_name", args: [uid] }),
     ]);
 
   if (personResult.rows.length === 0) {
@@ -225,9 +273,10 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
 });
 
 pagesRouter.get("/tree", requireAuth, async (req, res) => {
-  const people = await db.execute(
-    "SELECT id, given_name, middle_name, surname, birth_date FROM people ORDER BY surname, given_name"
-  );
+  const people = await db.execute({
+    sql: "SELECT id, given_name, middle_name, surname, birth_date FROM people WHERE created_by = ? ORDER BY surname, given_name",
+    args: [res.locals.user.id],
+  });
   const rootId = req.query.root as string | undefined;
   let tree = null;
   if (rootId) {

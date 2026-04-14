@@ -1,0 +1,62 @@
+<div class="page-header">
+  <h1>Account Settings</h1>
+</div>
+
+<% if (it.success === 'name') { %>
+  <div class="alert alert--success">Display name updated.</div>
+<% } else if (it.success === 'password') { %>
+  <div class="alert alert--success">Password changed successfully.</div>
+<% } else if (it.error) { %>
+  <div class="alert alert--error"><%= it.error %></div>
+<% } %>
+
+<div class="settings-grid">
+
+  <section class="settings-section">
+    <h2 class="settings-heading">Profile</h2>
+    <form method="POST" action="/profile">
+      <label for="name">Display Name</label>
+      <input id="name" type="text" name="name" value="<%= it.user.name ?? '' %>" required autocomplete="name" />
+
+      <label>Email Address</label>
+      <input type="email" value="<%= it.user.email %>" disabled />
+      <p class="settings-hint">Email cannot be changed.</p>
+
+      <div class="form-actions">
+        <button type="submit">Save Name</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="settings-section">
+    <h2 class="settings-heading">Change Password</h2>
+    <form method="POST" action="/profile/password">
+      <label for="current_password">Current Password</label>
+      <input id="current_password" type="password" name="current_password" required autocomplete="current-password" />
+
+      <label for="new_password">New Password</label>
+      <input id="new_password" type="password" name="new_password" required autocomplete="new-password" minlength="8" />
+
+      <label for="confirm_password">Confirm New Password</label>
+      <input id="confirm_password" type="password" name="confirm_password" required autocomplete="new-password" minlength="8" />
+
+      <div class="form-actions">
+        <button type="submit">Change Password</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="settings-section settings-section--danger">
+    <h2 class="settings-heading">Account</h2>
+    <div class="settings-account-row">
+      <div>
+        <strong>Sign out everywhere</strong>
+        <span>Revokes all active sessions on all devices.</span>
+      </div>
+      <form method="POST" action="/auth/sign-out">
+        <button type="submit" class="outline">Sign Out</button>
+      </form>
+    </div>
+  </section>
+
+</div>
