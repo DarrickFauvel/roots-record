@@ -1,5 +1,13 @@
-const CACHE = 'roots-record-v2';
-const PRECACHE = ['/icon.svg', '/manifest.json'];
+const CACHE = 'roots-record-v4';
+const PRECACHE = [
+  '/icon.svg', '/manifest.json',
+  '/styles.css', '/components.js', '/datastar.js',
+  '/fonts/fonts.css',
+  '/fonts/jetbrains-mono.woff2',
+  '/fonts/merriweather.woff2',
+  '/fonts/merriweather-italic.woff2',
+  '/fonts/nunito.woff2',
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)));

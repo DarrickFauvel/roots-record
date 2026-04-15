@@ -277,7 +277,13 @@ pagesRouter.get("/tree", requireAuth, async (req, res) => {
     sql: "SELECT id, given_name, middle_name, surname, birth_date FROM people WHERE created_by = ? ORDER BY surname, given_name",
     args: [res.locals.user.id],
   });
-  const rootId = req.query.root as string | undefined;
+  const cookies = Object.fromEntries(
+    (req.headers.cookie ?? '').split(';').flatMap(c => {
+      const [k, ...v] = c.trim().split('=');
+      return k ? [[decodeURIComponent(k), decodeURIComponent(v.join('='))]] : [];
+    })
+  );
+  const rootId = (req.query.root as string | undefined) ?? cookies['rr-tree-root'];
   let tree = null;
   if (rootId) {
     const { buildDescendantTree } = await import("../lib/tree.js");

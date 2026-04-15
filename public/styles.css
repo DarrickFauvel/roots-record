@@ -321,10 +321,8 @@ small { font-size: 0.8rem; font-family: var(--font-mono); color: var(--muted); }
   max-width: var(--max-width);
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .footer-brand {
@@ -338,6 +336,14 @@ small { font-size: 0.8rem; font-family: var(--font-mono); color: var(--muted); }
   font-style: italic;
   color: rgba(255,255,255,.3);
 }
+
+.footer-dev {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,.25);
+  text-decoration: none;
+  margin-left: auto;
+}
+.footer-dev:hover { color: rgba(255,255,255,.5); }
 
 /* ─── Section divider ────────────────────────────────────────────────────── */
 .section-rule {
@@ -929,7 +935,6 @@ details > :not(summary) { padding: 1rem 0.875rem; }
 .settings-account-row span  { font-size: .85rem; color: var(--muted); }
 
 .mobile-nav-user-name { color: rgba(255,255,255,.75); font-size: .85rem; }
-.mobile-nav-user-name:hover { color: var(--gold-light); }
 
 /* ─── Public landing ─────────────────────────────────────────────────────── */
 .landing {
@@ -1245,11 +1250,30 @@ details > :not(summary) { padding: 1rem 0.875rem; }
 @keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
 @keyframes fadeUp  { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
 
-.site-main > * { animation: fadeUp .35s ease both; }
+.site-main > * { animation: none; }
+
+/* ─── View transitions ───────────────────────────────────────────────────── */
+.site-main { view-transition-name: main-content; }
+
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; }
+
+::view-transition-old(main-content) {
+  animation: vt-out .2s ease both;
+}
+::view-transition-new(main-content) {
+  animation: vt-in .25s ease both;
+}
+@keyframes vt-out {
+  to { opacity: 0; }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(24px); }
+}
 
 /* ─── Avatar menu btn ────────────────────────────────────────────────────── */
 .nav-avatar {
-  display: none;
+  display: flex;
   width: 36px; height: 36px;
   min-height: unset;
   border-radius: 50%;
@@ -1299,21 +1323,26 @@ details > :not(summary) { padding: 1rem 0.875rem; }
 .nav-hamburger.is-open span:nth-child(2) { opacity: 0; }
 .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
-/* ─── Mobile nav drawer ──────────────────────────────────────────────────── */
+/* ─── Avatar dropdown ────────────────────────────────────────────────────── */
 .mobile-nav-overlay {
   position: fixed;
   inset: 0;
   z-index: 9;
 }
 .mobile-nav {
-  position: relative;
-  z-index: 10;
+  position: absolute;
+  top: calc(var(--nav-height) - 2px);
+  right: 1.5rem;
+  z-index: 200;
   background: var(--ink-soft);
-  border-top: 1px solid rgba(196,146,58,.25);
-  padding: 0.75rem 1rem 1rem;
+  border: 1px solid rgba(196,146,58,.25);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.5rem 0.75rem;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  box-shadow: var(--shadow-md);
 }
 .mobile-nav-link {
   display: block;
@@ -1334,19 +1363,18 @@ details > :not(summary) { padding: 1rem 0.875rem; }
 .mobile-nav-link--cta { color: var(--gold); font-weight: 500; }
 .mobile-nav-qr { color: rgba(255,255,255,.6); font-size: 0.9rem; }
 .mobile-nav-user {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(255,255,255,.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-left: 0.875rem;
-  padding-right: 0.875rem;
+  padding: 0.5rem 0.875rem 0;
   font-size: 0.8rem;
   color: rgba(255,255,255,.45);
 }
+.mobile-nav-sep {
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
 .mobile-nav-user a { color: rgba(255,255,255,.45); font-size: 0.8rem; }
 .mobile-nav-user a:hover { color: var(--gold-light); }
+.mobile-nav-theme { padding: 0.5rem 0.875rem; display: flex; align-items: center; gap: 0.5rem; }
+.mobile-nav-theme-label { color: rgba(255,255,255,.8); font-size: 1rem; }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 680px) {
@@ -1354,7 +1382,6 @@ details > :not(summary) { padding: 1rem 0.875rem; }
   .main-nav { display: none; }
   .user-menu { display: none; }
   .nav-hamburger { display: none; }
-  .nav-avatar { display: flex; }
   .header-inner { gap: 0.5rem; padding: 0 1rem; }
 
   /* Layout */

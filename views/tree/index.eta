@@ -5,7 +5,7 @@
 <div class="tree-selector" data-signals='{"root_id":"<%= it.rootId ?? "" %>"}'>
   <div>
     <label for="root-select">Starting from</label>
-    <select id="root-select" data-bind="root_id" data-on:change="$root_id && @get('/api/tree/' + $root_id)">
+    <select id="root-select" data-bind="root_id" data-on:change="$root_id && (document.cookie='rr-tree-root='+$root_id+';path=/;max-age=31536000', @get('/api/tree/' + $root_id))">
       <option value="">— Select a person —</option>
       <% for (const p of it.people) { %>
         <option value="<%= p.id %>" <% if (p.id === it.rootId) { %>selected<% } %>>

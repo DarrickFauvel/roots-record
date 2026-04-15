@@ -12,11 +12,14 @@
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/icon.svg" />
   <title><%= it.title ?? "Roots Record" %></title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400;1,700&family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/fonts/fonts.css" />
   <link rel="stylesheet" href="/styles.css" />
-  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.8/bundles/datastar.js"></script>
+  <style>
+    html,body{margin:0;background:#F1F5F9}
+    .site-header{background:#1E293B;min-height:68px;border-bottom:3px solid #166534}
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rr-theme') || 'forest');</script>
+  <script type="module" src="/datastar.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="/components.js" defer></script>
 </head>
@@ -29,16 +32,8 @@
       </a>
       <% if (it.user) { %>
         <nav class="main-nav" id="main-nav" aria-label="Main navigation">
-          <a href="/people" class="nav-link">People</a>
-          <a href="/tree" class="nav-link">Family Tree</a>
-          <a href="/people/new" class="nav-link nav-link--cta">Add Person</a>
         </nav>
-        <div class="user-menu">
-          <a href="/profile" class="user-name"><%= it.user.name ?? it.user.email %></a>
-          <a href="/auth/sign-out" class="sign-out">Sign out</a>
-        </div>
         <div class="nav-end">
-          <theme-picker></theme-picker>
           <button class="nav-qr-btn" id="qr-btn" aria-label="QR Code" title="QR Code">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
@@ -54,15 +49,18 @@
       <% } %>
     </div>
     <% if (it.user) { %>
-      <div class="mobile-nav-overlay" data-show="$navOpen" data-on:click="$navOpen = false"></div>
-      <div class="mobile-nav" data-show="$navOpen">
-        <a href="/people" class="mobile-nav-link">People</a>
-        <a href="/tree" class="mobile-nav-link">Family Tree</a>
-        <a href="/people/new" class="mobile-nav-link mobile-nav-link--cta">+ Add Person</a>
+      <div class="mobile-nav-overlay" data-show="$navOpen" data-on:click="$navOpen = false" style="display:none"></div>
+      <div class="mobile-nav" data-show="$navOpen" style="display:none">
         <div class="mobile-nav-user">
-          <a href="/profile" class="mobile-nav-user-name"><%= it.user.name ?? it.user.email %></a>
-          <a href="/auth/sign-out">Sign out</a>
+          <span class="mobile-nav-user-name"><%= it.user.name ?? it.user.email %></span>
+          <div class="mobile-nav-sep"></div>
         </div>
+        <div class="mobile-nav-theme">
+          <span class="mobile-nav-theme-label">Theme</span>
+          <theme-picker></theme-picker>
+        </div>
+        <a href="/profile" class="mobile-nav-link">Profile</a>
+        <a href="/auth/sign-out" class="mobile-nav-link">Sign out</a>
       </div>
     <% } %>
   </header>
@@ -89,6 +87,7 @@
     <div class="footer-inner">
       <span class="footer-brand">Roots Record</span>
       <span class="footer-tagline">Preserving family history across generations</span>
+      <a href="https://darrickdevelops.com" class="footer-dev" target="_blank" rel="noopener">Built by Darrick Develops</a>
     </div>
   </footer>
 

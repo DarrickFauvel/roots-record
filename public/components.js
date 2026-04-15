@@ -137,3 +137,65 @@ class ThemePickerElement extends HTMLElement {
   }
 }
 customElements.define('theme-picker', ThemePickerElement);
+
+// ── Client-side navigation ─────────────────────────────────────────────────
+const parser = new DOMParser();
+
+async function navigate(href, push = true) {
+  // Close avatar menu if open
+  const header = document.querySelector('[data-store]');
+  if (header && window.__ds) {
+    try { window.__ds.store.navOpen = false; } catch (_) {}
+  }
+
+  let html;
+  try {
+    const res = await fetch(href, { headers: { 'X-Partial': '1' } });
+    if (!res.ok || res.redirected) { location.href = res.url || href; return; }
+    html = await res.text();
+  } catch (_) { location.href = href; return; }
+
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const swap = () => {
+    document.title = doc.title;
+
+    const oldCrumb = document.querySelector('nav.breadcrumb');
+    const newCrumb = doc.querySelector('nav.breadcrumb');
+    if (oldCrumb && newCrumb) oldCrumb.replaceWith(newCrumb);
+    else if (oldCrumb) oldCrumb.remove();
+    else if (newCrumb) document.querySelector('.site-header').insertAdjacentElement('afterend', newCrumb);
+
+    const newMain = doc.querySelector('main.site-main');
+    if (newMain) document.querySelector('main.site-main').replaceWith(newMain);
+
+    window.scrollTo(0, 0);
+  };
+
+  if (push) history.pushState({ href }, '', href);
+
+  if (document.startViewTransition) {
+    document.startViewTransition(swap);
+  } else {
+    swap();
+  }
+}
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href]');
+  if (!a) return;
+  const url = new URL(a.href, location.origin);
+  if (
+    url.origin !== location.origin ||
+    a.target === '_blank' ||
+    a.hasAttribute('download') ||
+    url.pathname === '/auth/sign-out' ||
+    url.pathname.startsWith('/api')
+  ) return;
+  e.preventDefault();
+  navigate(url.pathname + url.search);
+});
+
+window.addEventListener('popstate', e => {
+  navigate(location.pathname + location.search, false);
+});
