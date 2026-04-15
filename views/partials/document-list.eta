@@ -8,10 +8,20 @@
             <span><%= d.title %></span>
             <small><%= d.doc_type.replace(/_/g, " ") %></small>
           </a>
-          <button
-            class="small outline"
-            data-on:click="confirmAction('Delete this document? This cannot be undone.', () => @delete('/api/documents/<%= d.id %>').then(()=>@get('/api/people/<%= it.personId %>/documents')))"
-          >Delete</button>
+          <div class="doc-card-actions">
+            <button
+              class="small outline"
+              data-doc-id="<%= d.id %>"
+              data-signed-url="<%= d.signed_url %>"
+              data-person-id="<%= it.personId %>"
+              data-has-crop="<%= d.crop_data ? '1' : '' %>"
+              onclick="openCropModal(this)"
+            >Crop</button>
+            <button
+              class="small outline"
+              data-on:click="confirmAction('Delete this document? This cannot be undone.', () => @delete('/api/documents/<%= d.id %>').then(()=>@get('/api/people/<%= it.personId %>/documents')))"
+            >Delete</button>
+          </div>
         </li>
       <% } %>
     </ul>
@@ -50,3 +60,4 @@
     </form>
   </details>
 </div>
+

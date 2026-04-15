@@ -45,3 +45,78 @@
 <div id="documents-section">
   <%~ include("../partials/document-list", { documents: it.documents, personId: p.id }) %>
 </div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<dialog id="crop-modal" class="crop-modal">
+  <h3 class="crop-modal-title">Crop Image</h3>
+  <div class="crop-container">
+    <img id="crop-img" src="" alt="crop preview" />
+  </div>
+  <form id="crop-form" method="POST" action="">
+    <input type="hidden" name="person_id" id="crop-person-id" />
+    <input type="hidden" name="x" id="crop-x" />
+    <input type="hidden" name="y" id="crop-y" />
+    <input type="hidden" name="w" id="crop-w" />
+    <input type="hidden" name="h" id="crop-h" />
+    <input type="hidden" name="reset" id="crop-reset" value="" />
+    <div class="crop-modal-actions">
+      <button type="submit" class="primary">Save Crop</button>
+      <button type="button" id="crop-reset-btn" class="outline">Remove Crop</button>
+      <button type="button" class="outline" onclick="document.getElementById('crop-modal').close()">Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  let currentCropper = null;
+  let cropperReady = false;
+
+  const modal = document.getElementById('crop-modal');
+  const img = document.getElementById('crop-img');
+  const form = document.getElementById('crop-form');
+  const saveBtn = form.querySelector('button[type="submit"]');
+  const resetBtn = document.getElementById('crop-reset-btn');
+
+  window.openCropModal = function (btn) {
+    form.action = '/api/documents/' + btn.dataset.docId + '/crop';
+    document.getElementById('crop-person-id').value = btn.dataset.personId;
+    document.getElementById('crop-reset').value = '';
+    resetBtn.style.display = btn.dataset.hasCrop ? '' : 'none';
+
+    saveBtn.disabled = true;
+    cropperReady = false;
+    if (currentCropper) { currentCropper.destroy(); currentCropper = null; }
+
+    img.onload = function () {
+      currentCropper = new Cropper(img, {
+        viewMode: 1,
+        autoCropArea: 1,
+        ready: function () { cropperReady = true; saveBtn.disabled = false; },
+      });
+    };
+    img.src = btn.dataset.signedUrl;
+    modal.showModal();
+  };
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!currentCropper || !cropperReady) return;
+    const data = currentCropper.getData();
+    const nw = img.naturalWidth, nh = img.naturalHeight;
+    if (!nw || !nh) return;
+    document.getElementById('crop-x').value = (data.x / nw).toFixed(6);
+    document.getElementById('crop-y').value = (data.y / nh).toFixed(6);
+    document.getElementById('crop-w').value = (data.width / nw).toFixed(6);
+    document.getElementById('crop-h').value = (data.height / nh).toFixed(6);
+    this.submit();
+  });
+
+  resetBtn.addEventListener('click', function () {
+    document.getElementById('crop-reset').value = '1';
+    form.submit();
+  });
+})();
+</script>

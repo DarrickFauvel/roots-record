@@ -793,6 +793,29 @@ details > :not(summary) { padding: 1rem 0.875rem; }
 .doc-title { font-size: 0.8rem; font-weight: 500; }
 .doc-type  { font-size: 0.7rem; font-family: var(--font-mono); color: var(--muted); text-transform: uppercase; }
 
+.doc-card-actions {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem 0.5rem;
+}
+.doc-card-actions button { flex: 1; font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+
+.crop-modal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  max-width: min(90vw, 800px);
+  width: 100%;
+}
+.crop-modal::backdrop { background: rgba(0,0,0,0.6); }
+.crop-modal-title { margin: 0 0 1rem; font-size: 1.1rem; }
+.crop-container { max-height: 60vh; overflow: hidden; }
+.crop-container img { max-width: 100%; display: block; }
+.crop-modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+.crop-modal-actions button { flex: 1; min-width: 90px; }
+
 /* ─── Family tree ────────────────────────────────────────────────────────── */
 .tree-container {
   overflow-x: auto;

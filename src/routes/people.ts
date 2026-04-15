@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { db } from "../db/client.js";
 import { requireAuth } from "../lib/auth-middleware.js";
 import { eta } from "../server.js";
+import { getSignedUrl } from "../lib/cloudinary.js";
 
 export const peopleApiRouter = Router();
 peopleApiRouter.use(requireAuth);
@@ -89,7 +90,15 @@ peopleApiRouter.get("/:id/residences", async (req, res) => {
 // GET /api/people/:id/documents
 peopleApiRouter.get("/:id/documents", async (req, res) => {
   const result = await db.execute({ sql: "SELECT * FROM documents WHERE person_id = ? ORDER BY created_at DESC", args: [req.params.id] });
-  const html = await eta.renderAsync("partials/document-list", { documents: result.rows, personId: req.params.id });
+  const docs = result.rows.map((d) => {
+    const crop = d.crop_data ? JSON.parse(String(d.crop_data)) : null;
+    return {
+      ...d,
+      signed_url: getSignedUrl(String(d.cloudinary_public_id), undefined, crop),
+      signed_thumb_url: getSignedUrl(String(d.cloudinary_public_id), "w_200,h_200,c_thumb", crop),
+    };
+  });
+  const html = await eta.renderAsync("partials/document-list", { documents: docs, personId: req.params.id });
   ServerSentEventGenerator.stream(req, res, (stream) => {
     stream.patchElements(`<div id="documents-section">${html}</div>`);
   });

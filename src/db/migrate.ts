@@ -34,6 +34,7 @@ export async function runMigrations(): Promise<void> {
   const alterations = [
     "ALTER TABLE people ADD COLUMN middle_name TEXT",
     "ALTER TABLE people ADD COLUMN maiden_name TEXT",
+    "ALTER TABLE documents ADD COLUMN crop_data TEXT",
   ];
   for (const sql of alterations) {
     await db.execute(sql).catch(() => {/* column already exists */});

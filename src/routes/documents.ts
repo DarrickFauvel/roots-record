@@ -1,4 +1,5 @@
 import { Router } from "express";
+import express from "express";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import { db } from "../db/client.js";
@@ -27,6 +28,29 @@ documentsRouter.post("/", upload.single("file"), async (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [id, person_id, title, doc_type || "other", public_id, secure_url, notes || null, res.locals.user.id],
   });
+  res.redirect(`/people/${person_id}`);
+});
+
+// POST /api/documents/:id/crop
+documentsRouter.post("/:id/crop", express.urlencoded({ extended: false }), async (req, res) => {
+  const result = await db.execute({
+    sql: `SELECT d.id, d.person_id FROM documents d JOIN people p ON p.id = d.person_id WHERE d.id = ? AND p.created_by = ?`,
+    args: [req.params.id, res.locals.user.id],
+  });
+  if (result.rows.length === 0) { res.status(404).json({ error: "Not found" }); return; }
+  const { person_id } = result.rows[0];
+
+  let cropData: string | null = null;
+  if (req.body.reset !== "1") {
+    const x = parseFloat(req.body.x), y = parseFloat(req.body.y);
+    const w = parseFloat(req.body.w), h = parseFloat(req.body.h);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(w) || !Number.isFinite(h)) {
+      res.status(400).json({ error: "Invalid crop values" }); return;
+    }
+    cropData = JSON.stringify({ x, y, w, h });
+  }
+
+  await db.execute({ sql: "UPDATE documents SET crop_data = ? WHERE id = ?", args: [cropData, req.params.id] });
   res.redirect(`/people/${person_id}`);
 });
 

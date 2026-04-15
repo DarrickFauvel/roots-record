@@ -263,11 +263,14 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
     children: children.rows,
     siblings: siblings.rows,
     residences: residences.rows,
-    documents: documents.rows.map((d) => ({
-      ...d,
-      signed_url: getSignedUrl(String(d.cloudinary_public_id)),
-      signed_thumb_url: getSignedUrl(String(d.cloudinary_public_id), "w_200,h_200,c_thumb"),
-    })),
+    documents: documents.rows.map((d) => {
+      const crop = d.crop_data ? JSON.parse(String(d.crop_data)) : null;
+      return {
+        ...d,
+        signed_url: getSignedUrl(String(d.cloudinary_public_id), undefined, crop),
+        signed_thumb_url: getSignedUrl(String(d.cloudinary_public_id), "w_200,h_200,c_thumb", crop),
+      };
+    }),
     allPeople: allPeople.rows,
   });
 });

@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS documents (
   cloudinary_public_id TEXT NOT NULL,
   cloudinary_url TEXT NOT NULL,
   notes TEXT,
+  crop_data TEXT,
   uploaded_by TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
