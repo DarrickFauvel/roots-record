@@ -141,7 +141,7 @@ customElements.define('theme-picker', ThemePickerElement);
 // ── Client-side navigation ─────────────────────────────────────────────────
 const parser = new DOMParser();
 
-async function navigate(href, push = true) {
+async function navigate(href, push = true, transition = true) {
   // Close avatar menu if open
   const header = document.querySelector('[data-store]');
   if (header && window.__ds) {
@@ -174,7 +174,7 @@ async function navigate(href, push = true) {
 
   if (push) history.pushState({ href }, '', href);
 
-  if (document.startViewTransition) {
+  if (transition && document.startViewTransition) {
     document.startViewTransition(swap);
   } else {
     swap();
@@ -193,7 +193,8 @@ document.addEventListener('click', e => {
     url.pathname.startsWith('/api')
   ) return;
   e.preventDefault();
-  navigate(url.pathname + url.search);
+  const noTransition = url.pathname === '/login' || url.pathname === '/register';
+  navigate(url.pathname + url.search, true, !noTransition);
 });
 
 window.addEventListener('popstate', e => {
