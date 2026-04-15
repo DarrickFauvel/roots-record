@@ -59,8 +59,9 @@
           <span class="mobile-nav-user-name"><%= it.user.name ?? it.user.email %></span>
           <div class="mobile-nav-sep"></div>
         </div>
-        <div class="mobile-nav-theme">
+        <div class="mobile-nav-theme" id="nav-theme-row">
           <span class="mobile-nav-theme-label">Theme</span>
+          <svg class="mobile-nav-theme-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
           <theme-picker></theme-picker>
         </div>
         <a href="/profile" class="mobile-nav-link">Profile</a>

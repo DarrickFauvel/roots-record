@@ -96,34 +96,65 @@ class ThemePickerElement extends HTMLElement {
     if (this._ready) return;
     this._ready = true;
 
-    this.insertAdjacentHTML('beforeend', `
-      <div class="theme-wrap">
-        <button class="theme-btn" aria-label="Choose color theme" title="Choose theme"></button>
-        <div class="theme-picker">
+    const inline = this.closest('#nav-theme-row');
+
+    if (inline) {
+      // Inline mode: swatches expand inside the dropdown row
+      this.insertAdjacentHTML('beforeend', `
+        <div class="theme-swatches-inline">
           ${THEMES.map(t => `
             <button class="theme-swatch" data-theme="${t.id}"
                     style="--sw:${t.color}" title="${t.label}"></button>
           `).join('')}
         </div>
-      </div>
-    `);
+      `);
 
-    this._btn    = this.querySelector('.theme-btn');
-    this._picker = this.querySelector('.theme-picker');
+      this._swatches = this.querySelector('.theme-swatches-inline');
 
-    this._btn.addEventListener('click', e => {
-      e.stopPropagation();
-      this._picker.classList.toggle('is-open');
-    });
-
-    this.querySelectorAll('.theme-swatch').forEach(swatch => {
-      swatch.addEventListener('click', () => {
-        this._apply(swatch.dataset.theme);
-        this._picker.classList.remove('is-open');
+      inline.addEventListener('click', e => {
+        if (!e.target.closest('.theme-swatch')) {
+          inline.classList.toggle('is-open');
+        }
       });
-    });
 
-    document.addEventListener('click', () => this._picker.classList.remove('is-open'));
+      this.querySelectorAll('.theme-swatch').forEach(swatch => {
+        swatch.addEventListener('click', e => {
+          e.stopPropagation();
+          this._apply(swatch.dataset.theme);
+          inline.classList.remove('is-open');
+        });
+      });
+    } else {
+      // Popup mode: floating swatch picker triggered by a button
+      this.insertAdjacentHTML('beforeend', `
+        <div class="theme-wrap">
+          <button class="theme-btn" aria-label="Choose color theme" title="Choose theme"></button>
+          <div class="theme-picker">
+            ${THEMES.map(t => `
+              <button class="theme-swatch" data-theme="${t.id}"
+                      style="--sw:${t.color}" title="${t.label}"></button>
+            `).join('')}
+          </div>
+        </div>
+      `);
+
+      this._btn    = this.querySelector('.theme-btn');
+      this._picker = this.querySelector('.theme-picker');
+
+      this._btn.addEventListener('click', e => {
+        e.stopPropagation();
+        this._picker.classList.toggle('is-open');
+      });
+
+      this.querySelectorAll('.theme-swatch').forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          this._apply(swatch.dataset.theme);
+          this._picker.classList.remove('is-open');
+        });
+      });
+
+      document.addEventListener('click', () => this._picker.classList.remove('is-open'));
+    }
 
     this._apply(localStorage.getItem('rr-theme') || 'forest');
   }
