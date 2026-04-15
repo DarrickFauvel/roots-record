@@ -103,8 +103,10 @@ class ThemePickerElement extends HTMLElement {
       this.insertAdjacentHTML('beforeend', `
         <div class="theme-swatches-inline">
           ${THEMES.map(t => `
-            <button class="theme-swatch" data-theme="${t.id}"
-                    style="--sw:${t.color}" title="${t.label}"></button>
+            <button class="theme-swatch" data-theme="${t.id}" style="--sw:${t.color}">
+              <span class="theme-swatch-dot"></span>
+              <span class="theme-swatch-label">${t.label}</span>
+            </button>
           `).join('')}
         </div>
       `);
@@ -174,10 +176,7 @@ const parser = new DOMParser();
 
 async function navigate(href, push = true, transition = true) {
   // Close avatar menu if open
-  const header = document.querySelector('[data-store]');
-  if (header && window.__ds) {
-    try { window.__ds.store.navOpen = false; } catch (_) {}
-  }
+  document.querySelector('.mobile-nav-overlay')?.click();
 
   let html;
   try {
