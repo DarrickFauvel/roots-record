@@ -46,6 +46,13 @@
       <a href="/register" role="button" class="outline">Create Account</a>
     </div>
 
+    <div class="landing-demo-block">
+      <a href="/login?demo=1" class="landing-demo-link">Explore the demo family →</a>
+      <span class="landing-demo-or">or log in as a demo user:</span>
+      <span class="landing-demo-field"><span class="landing-demo-field-label">username</span><code class="landing-demo-cred">demo</code></span>
+      <span class="landing-demo-field"><span class="landing-demo-field-label">password</span><code class="landing-demo-cred">demo1234</code></span>
+    </div>
+
     <p class="landing-footer-note">Private by design — your family history, yours alone.</p>
 
   </div>

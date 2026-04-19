@@ -5,6 +5,7 @@ import { db } from "../db/client.js";
 import { requireAuth } from "../lib/auth-middleware.js";
 import { eta } from "../server.js";
 import { getSignedUrl } from "../lib/cloudinary.js";
+import { getUserPlan, getPeopleCount, FREE_PERSON_LIMIT } from "../lib/plan.js";
 
 export const peopleApiRouter = Router();
 peopleApiRouter.use(requireAuth);
@@ -14,6 +15,12 @@ peopleApiRouter.post("/", async (req, res) => {
   const { given_name, surname, sex, birth_date, birth_place, death_date, death_place, death_cause, notes } = req.body as Record<string, string>;
   if (!given_name?.trim()) {
     res.status(400).json({ error: "given_name is required" });
+    return;
+  }
+
+  const [{ plan }, count] = await Promise.all([getUserPlan(res.locals.user.id), getPeopleCount(res.locals.user.id)]);
+  if (plan !== "pro" && count >= FREE_PERSON_LIMIT) {
+    res.status(403).json({ error: "Free plan limit reached. Upgrade to Pro to add more people." });
     return;
   }
   const id = nanoid();

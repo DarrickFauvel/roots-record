@@ -8,6 +8,7 @@
             <span><%= d.title %></span>
             <small><%= d.doc_type.replace(/_/g, " ") %></small>
           </a>
+          <% if (!it.isDemo) { %>
           <div class="doc-card-actions">
             <button
               class="small outline"
@@ -22,6 +23,7 @@
               data-on:click="confirmAction('Delete this document? This cannot be undone.', () => @delete('/api/documents/<%= d.id %>').then(()=>@get('/api/people/<%= it.personId %>/documents')))"
             >Delete</button>
           </div>
+          <% } %>
         </li>
       <% } %>
     </ul>
@@ -29,6 +31,7 @@
     <p><em>No documents uploaded yet.</em></p>
   <% } %>
 
+  <% if (!it.isDemo) { %>
   <details>
     <summary>Upload Document / Photo</summary>
     <form
@@ -59,5 +62,6 @@
       <button type="submit">Upload</button>
     </form>
   </details>
+  <% } %>
 </div>
 

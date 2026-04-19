@@ -10,6 +10,7 @@ export async function renderPage(
   data: Record<string, unknown> = {}
 ): Promise<void> {
   const body = await eta.renderAsync(view, data);
-  const html = await eta.renderAsync("layout", { ...data, body });
+  const layoutData = { plan: res.locals.plan ?? null, isDemo: res.locals.isDemo ?? false, ...data, body };
+  const html = await eta.renderAsync("layout", layoutData);
   res.send(html);
 }

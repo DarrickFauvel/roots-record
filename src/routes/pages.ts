@@ -5,6 +5,7 @@ import { renderPage } from "../lib/render.js";
 import { auth } from "../auth.js";
 import { eta } from "../server.js";
 import { getSignedUrl } from "../lib/cloudinary.js";
+import { getUserPlan, getPeopleCount, FREE_PERSON_LIMIT } from "../lib/plan.js";
 
 export const pagesRouter = Router();
 
@@ -15,16 +16,20 @@ async function renderAuth(res: import("express").Response, view: string, data: o
 }
 
 // Public routes
-pagesRouter.get("/login", async (_req, res) => renderAuth(res, "login", {}));
+pagesRouter.get("/login", async (req, res) => renderAuth(res, "login", { prefillDemo: req.query.demo === "1" }));
 pagesRouter.get("/register", async (_req, res) => renderAuth(res, "register", {}));
 
 pagesRouter.post("/auth/login", async (req, res) => {
-  const { email, password } = req.body as { email: string; password: string };
-  const result = await auth.api.signInEmail({ body: { email, password }, asResponse: true });
+  const { identifier, password } = req.body as { identifier: string; password: string };
+  const isEmail = identifier.includes("@");
+
+  const result = isEmail
+    ? await auth.api.signInEmail({ body: { email: identifier, password }, asResponse: true })
+    : await auth.api.signInUsername({ body: { username: identifier, password }, asResponse: true });
+
   if (!result.ok) {
     return renderAuth(res, "login", { error: true });
   }
-  // Forward Set-Cookie from Better Auth response
   const cookie = result.headers.get("set-cookie");
   if (cookie) res.setHeader("set-cookie", cookie);
   res.redirect("/");
@@ -37,8 +42,8 @@ pagesRouter.get("/auth/sign-out", async (req, res) => {
 });
 
 pagesRouter.post("/auth/register", async (req, res) => {
-  const { name, email, password } = req.body as { name: string; email: string; password: string };
-  const result = await auth.api.signUpEmail({ body: { name, email, password }, asResponse: true });
+  const { name, email, username, password } = req.body as { name: string; email: string; username: string; password: string };
+  const result = await auth.api.signUpEmail({ body: { name, email, username: username?.trim() || undefined, password }, asResponse: true });
   if (!result.ok) {
     const body = await result.json().catch(() => ({ message: "Registration failed" })) as { message?: string };
     return renderAuth(res, "register", { error: body.message ?? "Registration failed" });
@@ -71,7 +76,11 @@ pagesRouter.get("/", async (req, res) => {
     db.execute({ sql: "SELECT COUNT(*) as c FROM people WHERE created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
     db.execute({ sql: "SELECT COUNT(*) as c FROM relationships r JOIN people p ON p.id = r.person1_id WHERE p.created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
     db.execute({ sql: "SELECT COUNT(*) as c FROM documents d JOIN people p ON p.id = d.person_id WHERE p.created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
-    db.execute({ sql: "SELECT id, given_name, middle_name, surname, birth_date, death_date FROM people WHERE created_by = ? ORDER BY created_at DESC LIMIT 10", args: [uid] }),
+    db.execute({ sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date, p.birth_place, p.death_date,
+        COUNT(DISTINCT r.id) as rel_count
+      FROM people p
+      LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+      WHERE p.created_by = ? GROUP BY p.id ORDER BY p.created_at DESC LIMIT 10`, args: [uid] }),
   ]);
   await renderPage(res, "home", {
     title: "Home — Roots Record",
@@ -84,11 +93,14 @@ pagesRouter.get("/", async (req, res) => {
 
 // ── Profile / Settings ────────────────────────────────────────────────────
 pagesRouter.get("/profile", requireAuth, async (req, res) => {
+  const { plan } = await getUserPlan(res.locals.user.id);
+  const success = req.query.success === "billing" ? "You're now on Pro — enjoy unlimited access!" : (req.query.success ?? null);
   await renderPage(res, "profile", {
     title: "Account Settings — Roots Record",
     user: res.locals.user,
     breadcrumbs: [{ label: "Account Settings" }],
-    success: req.query.success ?? null,
+    plan,
+    success,
     error: req.query.error ?? null,
   });
 });
@@ -128,7 +140,13 @@ pagesRouter.post("/profile/password", requireAuth, async (req, res) => {
 
 pagesRouter.get("/people", requireAuth, async (_req, res) => {
   const result = await db.execute({
-    sql: "SELECT id, given_name, middle_name, surname, birth_date, birth_place, death_date, death_place FROM people WHERE created_by = ? ORDER BY surname, given_name",
+    sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date, p.birth_place, p.death_date, p.death_place,
+            COUNT(DISTINCT r.id) as rel_count
+          FROM people p
+          LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+          WHERE p.created_by = ?
+          GROUP BY p.id
+          ORDER BY p.surname, p.given_name`,
     args: [res.locals.user.id],
   });
   await renderPage(res, "people/list", {
@@ -152,6 +170,12 @@ pagesRouter.post("/people/new", requireAuth, async (req, res) => {
   const { given_name, middle_name, surname, maiden_name, sex, birth_date, birth_place, death_date, death_place, death_cause, notes } =
     req.body as Record<string, string>;
   if (!given_name?.trim()) { res.redirect("/people/new"); return; }
+
+  const [{ plan }, count] = await Promise.all([getUserPlan(res.locals.user.id), getPeopleCount(res.locals.user.id)]);
+  if (plan !== "pro" && count >= FREE_PERSON_LIMIT) {
+    res.redirect(`/upgrade?limit=people`);
+    return;
+  }
   const { nanoid } = await import("nanoid");
   const id = nanoid();
   await db.execute({
@@ -277,7 +301,13 @@ pagesRouter.get("/people/:id", requireAuth, async (req, res) => {
 
 pagesRouter.get("/tree", requireAuth, async (req, res) => {
   const people = await db.execute({
-    sql: "SELECT id, given_name, middle_name, surname, birth_date FROM people WHERE created_by = ? ORDER BY surname, given_name",
+    sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date,
+            COUNT(DISTINCT r.id) as rel_count
+          FROM people p
+          LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+          WHERE p.created_by = ?
+          GROUP BY p.id
+          ORDER BY p.surname, p.given_name`,
     args: [res.locals.user.id],
   });
   const cookies = Object.fromEntries(

@@ -1,0 +1,68 @@
+<div class="page-header">
+  <h1>Admin Dashboard</h1>
+</div>
+
+<div class="admin-stats">
+  <div class="admin-stat">
+    <span class="admin-stat-value"><%= it.stats.totalUsers %></span>
+    <span class="admin-stat-label">Total Users</span>
+  </div>
+  <div class="admin-stat">
+    <span class="admin-stat-value"><%= it.stats.proUsers %></span>
+    <span class="admin-stat-label">Pro</span>
+  </div>
+  <div class="admin-stat">
+    <span class="admin-stat-value"><%= it.stats.freeUsers %></span>
+    <span class="admin-stat-label">Free</span>
+  </div>
+  <div class="admin-stat">
+    <span class="admin-stat-value"><%= it.stats.totalPeople %></span>
+    <span class="admin-stat-label">People Records</span>
+  </div>
+  <div class="admin-stat">
+    <span class="admin-stat-value"><%= it.stats.totalDocs %></span>
+    <span class="admin-stat-label">Documents</span>
+  </div>
+</div>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Plan</th>
+        <th>People</th>
+        <th>Docs</th>
+        <th>Joined</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (const u of it.users) { %>
+      <tr>
+        <td>
+          <span class="admin-user-name"><%= u.name ?? "—" %></span>
+          <span class="admin-user-email"><%= u.email %></span>
+        </td>
+        <td>
+          <span class="plan-pill plan-pill--<%= u.plan %>"><%= u.plan %></span>
+        </td>
+        <td><%= u.people_count %></td>
+        <td><%= u.doc_count %></td>
+        <td class="admin-date"><%= fmtDate(String(u.createdAt).slice(0,10)) %></td>
+        <td>
+          <form method="POST" action="/admin/users/<%= u.id %>/plan">
+            <% if (u.plan === 'free') { %>
+              <input type="hidden" name="plan" value="pro" />
+              <button type="submit" class="admin-toggle-btn admin-toggle-btn--upgrade">Set Pro</button>
+            <% } else { %>
+              <input type="hidden" name="plan" value="free" />
+              <button type="submit" class="admin-toggle-btn admin-toggle-btn--downgrade outline">Set Free</button>
+            <% } %>
+          </form>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

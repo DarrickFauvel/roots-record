@@ -10,10 +10,12 @@
             <% } %>
             <span class="type-badge"><%= r.type %></span>
           </span>
+          <% if (!it.isDemo) { %>
           <div style="display:flex;gap:.5rem">
             <button class="small outline" data-on:click="$edit_res_id=<%= JSON.stringify(String(r.id)) %>;$edit_res_place=<%= JSON.stringify(String(r.place||'')) %>;$edit_res_type=<%= JSON.stringify(String(r.type||'residence')) %>;$edit_res_start=<%= JSON.stringify(String(r.start_date||'')) %>;$edit_res_end=<%= JSON.stringify(String(r.end_date||'')) %>">Edit</button>
             <button class="small outline" data-on:click="confirmAction('Remove this residence?', () => @delete('/api/residences/<%= r.id %>'))">Remove</button>
           </div>
+          <% } %>
         </li>
       <% } %>
     </ul>
@@ -21,6 +23,7 @@
     <p style="color:var(--muted);font-style:italic;margin:0">No residences recorded.</p>
   <% } %>
 
+  <% if (!it.isDemo) { %>
   <div data-show="$edit_res_id !== ''" style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;display:none">
     <strong style="font-family:var(--font-display)">Edit Residence</strong>
     <label style="margin-top:.75rem">Place</label>
@@ -81,4 +84,5 @@
       </div>
     </div>
   </details>
+  <% } %>
 </div>

@@ -46,6 +46,21 @@
     </form>
   </section>
 
+  <section class="settings-section">
+    <h2 class="settings-heading">Plan</h2>
+    <div class="settings-account-row">
+      <div>
+        <strong><%= it.plan === 'pro' ? 'Pro' : 'Free' %></strong>
+        <span><%= it.plan === 'pro' ? 'Unlimited people and document uploads.' : 'Up to 50 people. No document uploads.' %></span>
+      </div>
+      <% if (it.plan === 'pro') { %>
+        <a href="/billing/portal" class="outline">Manage</a>
+      <% } else { %>
+        <a href="/upgrade">Upgrade to Pro</a>
+      <% } %>
+    </div>
+  </section>
+
   <section class="settings-section settings-section--danger">
     <h2 class="settings-heading">Account</h2>
     <div class="settings-account-row">

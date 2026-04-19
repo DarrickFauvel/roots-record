@@ -18,7 +18,8 @@
     "eta": "latest",
     "express": "latest",
     "multer": "latest",
-    "nanoid": "latest"
+    "nanoid": "latest",
+    "stripe": "^22.0.2"
   },
   "devDependencies": {
     "@types/express": "latest",

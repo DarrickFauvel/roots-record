@@ -4,15 +4,15 @@
     <p class="auth-subtitle">Sign in to access your family records</p>
 
     <% if (it.error) { %>
-      <p style="color:var(--rust);font-size:.875rem;margin-bottom:.5rem">Invalid email or password.</p>
+      <p style="color:var(--rust);font-size:.875rem;margin-bottom:.5rem">Invalid credentials.</p>
     <% } %>
 
     <form method="POST" action="/auth/login">
-      <label for="email">Email address</label>
-      <input id="email" type="email" name="email" autocomplete="email" required placeholder="you@example.com" />
+      <label for="identifier">Email or username</label>
+      <input id="identifier" type="text" name="identifier" autocomplete="username" required placeholder="you@example.com or yourname"<% if (it.prefillDemo) { %> value="demo"<% } %> />
 
       <label for="password">Password</label>
-      <input id="password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••" />
+      <input id="password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••"<% if (it.prefillDemo) { %> value="demo1234"<% } %> />
 
       <div style="margin-top:1.75rem">
         <button type="submit" style="width:100%;justify-content:center">Sign In</button>

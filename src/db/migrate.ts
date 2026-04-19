@@ -35,10 +35,18 @@ export async function runMigrations(): Promise<void> {
     "ALTER TABLE people ADD COLUMN middle_name TEXT",
     "ALTER TABLE people ADD COLUMN maiden_name TEXT",
     "ALTER TABLE documents ADD COLUMN crop_data TEXT",
+    "ALTER TABLE user ADD COLUMN plan TEXT NOT NULL DEFAULT 'free'",
+    "ALTER TABLE user ADD COLUMN stripe_customer_id TEXT",
+    "ALTER TABLE user ADD COLUMN stripe_subscription_id TEXT",
+    "ALTER TABLE user ADD COLUMN username TEXT",
   ];
   for (const sql of alterations) {
     await db.execute(sql).catch(() => {/* column already exists */});
   }
+
+  await db.execute(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_user_username ON user(username) WHERE username IS NOT NULL"
+  ).catch(() => {});
 
   console.log("Database migrations applied.");
 }

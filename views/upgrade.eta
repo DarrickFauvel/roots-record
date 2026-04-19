@@ -1,0 +1,52 @@
+<div class="page-header">
+  <h1>Plans</h1>
+</div>
+
+<% if (it.limit === 'people') { %>
+  <div class="alert alert--error">You've reached the 50-person limit on the free plan. Upgrade to add more.</div>
+<% } else if (it.limit === 'documents') { %>
+  <div class="alert alert--error">Document uploads are a Pro feature. Upgrade to attach records and photos.</div>
+<% } %>
+
+<div class="plan-grid">
+
+  <div class="plan-card<%= it.plan === 'free' ? ' plan-card--current' : '' %>">
+    <div class="plan-card-header">
+      <h2 class="plan-name">Free</h2>
+      <div class="plan-price">$0<span class="plan-period">/mo</span></div>
+    </div>
+    <ul class="plan-features">
+      <li class="plan-feature">Up to 50 people</li>
+      <li class="plan-feature">Relationships &amp; family tree</li>
+      <li class="plan-feature">Residences &amp; life events</li>
+      <li class="plan-feature plan-feature--no">Document uploads</li>
+      <li class="plan-feature plan-feature--no">Photo attachments</li>
+    </ul>
+    <% if (it.plan === 'free') { %>
+      <span class="plan-badge">Current plan</span>
+    <% } %>
+  </div>
+
+  <div class="plan-card plan-card--pro<%= it.plan === 'pro' ? ' plan-card--current' : '' %>">
+    <div class="plan-card-header">
+      <h2 class="plan-name">Pro</h2>
+      <div class="plan-price">$5<span class="plan-period">/mo</span></div>
+    </div>
+    <ul class="plan-features">
+      <li class="plan-feature">Unlimited people</li>
+      <li class="plan-feature">Relationships &amp; family tree</li>
+      <li class="plan-feature">Residences &amp; life events</li>
+      <li class="plan-feature">Document uploads</li>
+      <li class="plan-feature">Photo attachments</li>
+    </ul>
+    <% if (it.plan === 'pro') { %>
+      <span class="plan-badge">Current plan</span>
+      <a href="/billing/portal" class="outline">Manage Subscription</a>
+    <% } else { %>
+      <form method="POST" action="/billing/checkout">
+        <button type="submit">Upgrade to Pro</button>
+      </form>
+    <% } %>
+  </div>
+
+</div>

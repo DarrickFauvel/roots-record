@@ -65,10 +65,24 @@
           <theme-picker></theme-picker>
         </div>
         <a href="/profile" class="mobile-nav-link">Profile</a>
+        <% if (it.plan !== 'pro') { %>
+          <a href="/upgrade" class="mobile-nav-link mobile-nav-link--upgrade">Upgrade to Pro</a>
+        <% } %>
         <a href="/auth/sign-out" class="mobile-nav-link">Sign out</a>
       </div>
     <% } %>
   </header>
+
+  <% if (it.isDemo) { %>
+  <div class="demo-banner">
+    <span>You're viewing a demo. <strong>Read-only.</strong></span>
+    <div class="demo-banner-actions">
+      <a href="/demo/people">People</a>
+      <a href="/demo/tree">Tree</a>
+      <a href="/register">Create your own account →</a>
+    </div>
+  </div>
+  <% } %>
 
   <% if (it.breadcrumbs && it.breadcrumbs.length > 0) { %>
   <nav class="breadcrumb" aria-label="Breadcrumb">

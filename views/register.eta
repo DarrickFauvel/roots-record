@@ -11,6 +11,9 @@
       <label for="name">Full name</label>
       <input id="name" type="text" name="name" autocomplete="name" required placeholder="Your name" />
 
+      <label for="username">Username <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <input id="username" type="text" name="username" autocomplete="username" placeholder="yourname" pattern="[a-zA-Z0-9_-]+" title="Letters, numbers, underscores, hyphens only" />
+
       <label for="email">Email address</label>
       <input id="email" type="email" name="email" autocomplete="email" required placeholder="you@example.com" />
 

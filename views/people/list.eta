@@ -1,6 +1,6 @@
 <div class="page-header">
   <h1>People</h1>
-  <a href="/people/new" role="button">+ Add Person</a>
+  <% if (!it.isDemo) { %><a href="/people/new" role="button">+ Add Person</a><% } %>
 </div>
 
 <div class="search-wrap" data-signals='{"q":""}'>

@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { db } from "../db/client.js";
 import { requireAuth } from "../lib/auth-middleware.js";
 import { uploadDocument, deleteDocument } from "../lib/cloudinary.js";
+import { getUserPlan } from "../lib/plan.js";
 
 export const documentsRouter = Router();
 documentsRouter.use(requireAuth);
@@ -16,6 +17,12 @@ documentsRouter.post("/", upload.single("file"), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: "file is required" }); return; }
   const { person_id, title, doc_type, notes } = req.body as Record<string, string>;
   if (!person_id || !title) { res.status(400).json({ error: "person_id and title are required" }); return; }
+
+  const { plan } = await getUserPlan(res.locals.user.id);
+  if (plan !== "pro") {
+    res.redirect(`/upgrade?limit=documents&person_id=${person_id}`);
+    return;
+  }
 
   // Verify person belongs to this user
   const owns = await db.execute({ sql: "SELECT id FROM people WHERE id = ? AND created_by = ?", args: [person_id, res.locals.user.id] });

@@ -2,17 +2,42 @@
   <h1>Family Tree</h1>
 </div>
 
-<div class="tree-selector" data-signals='{"root_id":"<%= it.rootId ?? "" %>"}'>
-  <div>
-    <label for="root-select">Starting from</label>
-    <select id="root-select" data-bind="root_id" data-on:change="$root_id && (document.cookie='rr-tree-root='+$root_id+';path=/;max-age=31536000', @get('/api/tree/' + $root_id))">
-      <option value="">— Select a person —</option>
+<%
+  const initLabel = it.rootId
+    ? (() => {
+        const found = it.people.find(p => p.id === it.rootId);
+        if (!found) return "— Select a person —";
+        return found.given_name
+          + (found.middle_name ? ` ${found.middle_name[0]}.` : "")
+          + " " + (found.surname ?? "")
+          + (found.birth_date ? ` (${fmtYear(found.birth_date)})` : "");
+      })()
+    : "— Select a person —";
+%>
+
+<div class="tree-selector" data-signals='{"root_id":"<%= it.rootId ?? "" %>","cs_open":false,"cs_label":<%= JSON.stringify(initLabel) %>}'>
+  <div class="cs-wrap">
+    <label>Starting from</label>
+    <div class="cs-backdrop" data-show="$cs_open" data-on:click="$cs_open=false" style="display:none"></div>
+    <button class="cs-trigger" type="button" data-on:click="$cs_open=!$cs_open">
+      <span data-text="$cs_label"></span>
+      <svg class="cs-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="cs-list" data-show="$cs_open" style="display:none">
       <% for (const p of it.people) { %>
-        <option value="<%= p.id %>" <% if (p.id === it.rootId) { %>selected<% } %>>
-          <%= p.given_name %><%= p.middle_name ? ` ${p.middle_name[0]}.` : "" %> <%= p.surname ?? "" %><% if (p.birth_date) { %> (<%= fmtYear(p.birth_date) %>)<% } %>
-        </option>
+        <%
+          const label = p.given_name
+            + (p.middle_name ? ` ${p.middle_name[0]}.` : "")
+            + " " + (p.surname ?? "")
+            + (p.birth_date ? ` (${fmtYear(p.birth_date)})` : "");
+        %>
+        <button class="cs-option<% if (p.id === it.rootId) { %> cs-option--selected<% } %>" type="button"
+          data-on:click="$root_id=<%= JSON.stringify(String(p.id)) %>;$cs_label=<%= JSON.stringify(label) %>;$cs_open=false;document.cookie='rr-tree-root='+<%= JSON.stringify(String(p.id)) %>+';path=/;max-age=31536000';@get('/api/tree/<%= p.id %>')">
+          <span class="cs-option-name"><%= label %></span>
+          <% if (p.rel_count > 0) { %><span class="cs-option-count"><%= p.rel_count %> relation<%= p.rel_count === 1 ? '' : 's' %></span><% } %>
+        </button>
       <% } %>
-    </select>
+    </div>
   </div>
 </div>
 

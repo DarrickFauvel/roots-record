@@ -6,10 +6,12 @@
       <small style="color:var(--muted)"><%= p.sex === 'M' ? 'Male' : p.sex === 'F' ? 'Female' : p.sex %></small>
     <% } %>
   </div>
+  <% if (!it.isDemo) { %>
   <div style="display:flex;gap:.5rem;flex-wrap:wrap">
     <a href="/people/<%= p.id %>/edit" role="button" class="outline">Edit</a>
     <button class="outline danger small" data-on:click="confirmAction('Permanently delete this person and all their records?', () => @delete('/api/people/<%= p.id %>').then(()=>window.location='/people'))">Delete</button>
   </div>
+  <% } %>
 </div>
 
 <dl class="vital-facts">
@@ -29,7 +31,7 @@
 
 <p class="profile-section-title">Residences &amp; Migration</p>
 <div id="residences-section">
-  <%~ include("../partials/residences", { residences: it.residences, personId: p.id }) %>
+  <%~ include("../partials/residences", { residences: it.residences, personId: p.id, isDemo: it.isDemo }) %>
 </div>
 
 <p class="profile-section-title">Family Relationships</p>
@@ -37,13 +39,14 @@
   <%~ include("../partials/relationships", {
     parents: it.parents, spouses: it.spouses,
     children: it.children, siblings: it.siblings,
-    personId: p.id, allPeople: it.allPeople
+    personId: p.id, allPeople: it.allPeople,
+    isDemo: it.isDemo, basePath: it.isDemo ? '/demo/people' : '/people'
   }) %>
 </div>
 
 <p class="profile-section-title">Documents &amp; Photos</p>
 <div id="documents-section">
-  <%~ include("../partials/document-list", { documents: it.documents, personId: p.id }) %>
+  <%~ include("../partials/document-list", { documents: it.documents, personId: p.id, isDemo: it.isDemo }) %>
 </div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
