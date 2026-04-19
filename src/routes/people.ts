@@ -6,6 +6,7 @@ import { requireAuth } from "../lib/auth-middleware.js";
 import { eta } from "../server.js";
 import { getSignedUrl } from "../lib/cloudinary.js";
 import { getUserPlan, getPeopleCount, FREE_PERSON_LIMIT } from "../lib/plan.js";
+import { syncFts } from "../lib/fts.js";
 
 export const peopleApiRouter = Router();
 peopleApiRouter.use(requireAuth);
@@ -111,15 +112,3 @@ peopleApiRouter.get("/:id/documents", async (req, res) => {
   });
 });
 
-async function syncFts(personId: string): Promise<void> {
-  const r = await db.execute({ sql: "SELECT * FROM people WHERE id = ?", args: [personId] });
-  if (r.rows.length === 0) return;
-  const p = r.rows[0];
-  await db.batch([
-    { sql: "DELETE FROM people_fts WHERE id = ?", args: [personId] },
-    {
-      sql: "INSERT INTO people_fts(id, given_name, surname, birth_place, death_place, notes) VALUES (?,?,?,?,?,?)",
-      args: [p.id, p.given_name, p.surname ?? "", p.birth_place ?? "", p.death_place ?? "", p.notes ?? ""],
-    },
-  ]);
-}

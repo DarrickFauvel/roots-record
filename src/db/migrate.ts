@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { db } from "./client.js";
+import { rebuildFts } from "../lib/fts.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(__dirname, "..", "schema.sql");
@@ -48,5 +49,6 @@ export async function runMigrations(): Promise<void> {
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_user_username ON user(username) WHERE username IS NOT NULL"
   ).catch(() => {});
 
+  await rebuildFts();
   console.log("Database migrations applied.");
 }

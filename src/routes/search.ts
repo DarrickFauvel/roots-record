@@ -15,18 +15,33 @@ searchRouter.get("/", async (req, res) => {
   let rows;
   if (!q) {
     const result = await db.execute({
-      sql: "SELECT id, given_name, surname, birth_date, birth_place, death_date, death_place FROM people WHERE created_by = ? ORDER BY surname, given_name LIMIT 50",
+      sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date, p.birth_place, p.death_date, p.death_place,
+              COUNT(DISTINCT r.id) as rel_count,
+              COUNT(DISTINCT d.id) as doc_count
+            FROM people p
+            LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+            LEFT JOIN documents d ON d.person_id = p.id
+            WHERE p.created_by = ?
+            GROUP BY p.id
+            ORDER BY p.surname, p.given_name LIMIT 50`,
       args: [userId],
     });
     rows = result.rows;
   } else {
     const result = await db.execute({
-      sql: `SELECT p.id, p.given_name, p.surname, p.birth_date, p.birth_place, p.death_date, p.death_place
-            FROM people_fts f
-            JOIN people p ON p.id = f.id
-            WHERE people_fts MATCH ? AND p.created_by = ?
-            ORDER BY rank
-            LIMIT 50`,
+      sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date, p.birth_place, p.death_date, p.death_place,
+              COUNT(DISTINCT r.id) as rel_count,
+              COUNT(DISTINCT d.id) as doc_count
+            FROM (
+              SELECT f.id FROM people_fts f
+              JOIN people px ON px.id = f.id
+              WHERE people_fts MATCH ? AND px.created_by = ?
+              ORDER BY rank LIMIT 50
+            ) fts
+            JOIN people p ON p.id = fts.id
+            LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+            LEFT JOIN documents d ON d.person_id = p.id
+            GROUP BY p.id`,
       args: [`${q}*`, userId],
     });
     rows = result.rows;

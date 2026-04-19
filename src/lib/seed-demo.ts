@@ -1,6 +1,7 @@
 import { auth } from "../auth.js";
 import { db } from "../db/client.js";
 import { nanoid } from "nanoid";
+import { uploadDocument } from "./cloudinary.js";
 
 const DEMO_EMAIL = "demo@rootsrecord.com";
 const DEMO_PASSWORD = "demo1234";
@@ -8,7 +9,7 @@ const DEMO_PASSWORD = "demo1234";
 export async function seedDemo(): Promise<void> {
   const existing = await db.execute({ sql: "SELECT id, username FROM user WHERE email = ?", args: [DEMO_EMAIL] });
   if (existing.rows.length > 0) {
-    // Ensure username is set for already-seeded demo user
+    const uid = String(existing.rows[0].id);
     if (!existing.rows[0].username) {
       await db.execute({ sql: "UPDATE user SET username = 'demo' WHERE email = ?", args: [DEMO_EMAIL] });
     }
@@ -105,4 +106,71 @@ export async function seedDemo(): Promise<void> {
   }
 
   console.log("Demo account seeded (demo@rootsrecord.com / demo1234)");
+}
+
+export async function seedDemoDocs(): Promise<void> {
+  const userRow = await db.execute({ sql: "SELECT id FROM user WHERE email = ?", args: [DEMO_EMAIL] });
+  if (userRow.rows.length === 0) return;
+  const uid = String(userRow.rows[0].id);
+
+  const existing = await db.execute({
+    sql: "SELECT COUNT(*) as c FROM documents d JOIN people p ON p.id = d.person_id WHERE p.created_by = ?",
+    args: [uid],
+  });
+  if (Number(existing.rows[0].c) > 0) return;
+
+  // Fetch people for the demo user
+  const people = await db.execute({
+    sql: "SELECT id, given_name, surname FROM people WHERE created_by = ? ORDER BY birth_date",
+    args: [uid],
+  });
+  if (people.rows.length === 0) return;
+
+  const byName = (first: string) =>
+    people.rows.find(p => String(p.given_name).toLowerCase().startsWith(first.toLowerCase()));
+
+  const samples: Array<{ personId: string; title: string; doc_type: string; imageUrl: string }> = [
+    {
+      personId: String(byName("John")?.id ?? people.rows[0].id),
+      title: "Portrait of John Smith",
+      doc_type: "photo",
+      imageUrl: "https://picsum.photos/seed/johnsmith/600/800?grayscale",
+    },
+    {
+      personId: String(byName("Mary")?.id ?? people.rows[1]?.id ?? people.rows[0].id),
+      title: "Portrait of Mary Smith",
+      doc_type: "photo",
+      imageUrl: "https://picsum.photos/seed/marysmith/600/800?grayscale",
+    },
+    {
+      personId: String(byName("William")?.id ?? people.rows[2]?.id ?? people.rows[0].id),
+      title: "Smith Family Residence, 1895",
+      doc_type: "photo",
+      imageUrl: "https://picsum.photos/seed/smithhouse/900/600?grayscale",
+    },
+    {
+      personId: String(byName("John")?.id ?? people.rows[0].id),
+      title: "Birth Record — John H. Smith",
+      doc_type: "birth_certificate",
+      imageUrl: "https://picsum.photos/seed/birthcert/700/900?grayscale",
+    },
+  ];
+
+  for (const s of samples) {
+    try {
+      const res = await fetch(s.imageUrl);
+      const buf = Buffer.from(await res.arrayBuffer());
+      const { public_id, secure_url } = await uploadDocument(buf, {
+        folder: `roots-record/${s.personId}`,
+      });
+      await db.execute({
+        sql: `INSERT INTO documents (id, person_id, title, doc_type, cloudinary_public_id, cloudinary_url, notes, uploaded_by)
+              VALUES (?, ?, ?, ?, ?, ?, NULL, ?)`,
+        args: [nanoid(), s.personId, s.title, s.doc_type, public_id, secure_url, uid],
+      });
+      console.log(`Demo doc uploaded: ${s.title}`);
+    } catch (e) {
+      console.warn(`Skipped demo doc "${s.title}":`, (e as Error).message);
+    }
+  }
 }

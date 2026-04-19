@@ -6,6 +6,7 @@ import { auth } from "../auth.js";
 import { eta } from "../server.js";
 import { getSignedUrl } from "../lib/cloudinary.js";
 import { getUserPlan, getPeopleCount, FREE_PERSON_LIMIT } from "../lib/plan.js";
+import { syncFts } from "../lib/fts.js";
 
 export const pagesRouter = Router();
 
@@ -77,9 +78,11 @@ pagesRouter.get("/", async (req, res) => {
     db.execute({ sql: "SELECT COUNT(*) as c FROM relationships r JOIN people p ON p.id = r.person1_id WHERE p.created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
     db.execute({ sql: "SELECT COUNT(*) as c FROM documents d JOIN people p ON p.id = d.person_id WHERE p.created_by = ?", args: [uid] }).then((r) => Number(r.rows[0].c)),
     db.execute({ sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date, p.birth_place, p.death_date,
-        COUNT(DISTINCT r.id) as rel_count
+        COUNT(DISTINCT r.id) as rel_count,
+        COUNT(DISTINCT d.id) as doc_count
       FROM people p
       LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+      LEFT JOIN documents d ON d.person_id = p.id
       WHERE p.created_by = ? GROUP BY p.id ORDER BY p.created_at DESC LIMIT 10`, args: [uid] }),
   ]);
   await renderPage(res, "home", {
@@ -141,9 +144,11 @@ pagesRouter.post("/profile/password", requireAuth, async (req, res) => {
 pagesRouter.get("/people", requireAuth, async (_req, res) => {
   const result = await db.execute({
     sql: `SELECT p.id, p.given_name, p.middle_name, p.surname, p.birth_date, p.birth_place, p.death_date, p.death_place,
-            COUNT(DISTINCT r.id) as rel_count
+            COUNT(DISTINCT r.id) as rel_count,
+            COUNT(DISTINCT d.id) as doc_count
           FROM people p
           LEFT JOIN relationships r ON r.person1_id = p.id OR r.person2_id = p.id
+          LEFT JOIN documents d ON d.person_id = p.id
           WHERE p.created_by = ?
           GROUP BY p.id
           ORDER BY p.surname, p.given_name`,
@@ -187,6 +192,7 @@ pagesRouter.post("/people/new", requireAuth, async (req, res) => {
            death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null,
            res.locals.user.id],
   });
+  await syncFts(id);
   res.redirect(`/people/${id}`);
 });
 
@@ -229,6 +235,7 @@ pagesRouter.post("/people/:id/edit", requireAuth, async (req, res) => {
            death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null,
            id, res.locals.user.id],
   });
+  await syncFts(id);
   res.redirect(`/people/${id}`);
 });
 

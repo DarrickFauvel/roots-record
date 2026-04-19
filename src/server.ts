@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Eta } from "eta";
 import { runMigrations, runAuthMigrations } from "./db/migrate.js";
-import { seedDemo } from "./lib/seed-demo.js";
+import { seedDemo, seedDemoDocs } from "./lib/seed-demo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -30,6 +30,7 @@ const PORT = Number(process.env.PORT ?? 3000);
 
 Promise.all([runMigrations(), runAuthMigrations()])
   .then(() => seedDemo())
+  .then(() => seedDemoDocs())
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Roots Record running at http://localhost:${PORT}`);

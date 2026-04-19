@@ -625,9 +625,11 @@ legend {
   text-align: left;
 }
 
+.person-card-badges { display: inline-flex; align-items: center; gap: 0.5rem; }
 .person-rel-count { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--gold); font-weight: 600; font-size: 0.75rem; font-family: var(--font-mono); }
 .person-rel-label { max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width 0.25s ease, opacity 0.25s ease; opacity: 0; }
 .person-card a:hover .person-rel-label { max-width: 5rem; opacity: 1; }
+.person-doc-count { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--muted); font-weight: 600; font-size: 0.75rem; font-family: var(--font-mono); }
 .person-place { font-size: 0.78rem; font-family: var(--font-mono); color: var(--muted); width: 100%; }
 
 /* ─── Search ─────────────────────────────────────────────────────────────── */
@@ -637,19 +639,20 @@ legend {
 }
 
 .search-wrap input {
-  padding-left: 1.75rem;
+  padding-left: 2.75rem;
   font-size: 1.05rem;
   border-bottom-width: 2px;
 }
 
 .search-icon {
   position: absolute;
-  left: 0;
+  left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--muted-light);
   pointer-events: none;
-  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
 }
 
 /* ─── Profile ────────────────────────────────────────────────────────────── */
