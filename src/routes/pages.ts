@@ -172,7 +172,9 @@ pagesRouter.get("/people/new", requireAuth, async (_req, res) => {
 });
 
 pagesRouter.post("/people/new", requireAuth, async (req, res) => {
-  const { given_name, middle_name, surname, maiden_name, sex, birth_date, birth_place, death_date, death_place, death_cause, notes } =
+  const { given_name, middle_name, surname, maiden_name, sex,
+    birth_date, birth_country, birth_city, birth_state,
+    death_date, death_country, death_city, death_state, death_cause, notes } =
     req.body as Record<string, string>;
   if (!given_name?.trim()) { res.redirect("/people/new"); return; }
 
@@ -183,14 +185,16 @@ pagesRouter.post("/people/new", requireAuth, async (req, res) => {
   }
   const { nanoid } = await import("nanoid");
   const id = nanoid();
+  const birth_place = [birth_city, birth_state, birth_country].filter(Boolean).join(", ") || null;
+  const death_place = [death_city, death_state, death_country].filter(Boolean).join(", ") || null;
   await db.execute({
-    sql: `INSERT INTO people (id, given_name, middle_name, surname, maiden_name, sex, birth_date, birth_place, death_date, death_place, death_cause, notes, created_by)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    sql: `INSERT INTO people (id, given_name, middle_name, surname, maiden_name, sex, birth_date, birth_place, birth_country, birth_city, birth_state, death_date, death_place, death_country, death_city, death_state, death_cause, notes, created_by)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [id, given_name.trim(), middle_name?.trim() || null, surname?.trim() || null,
            maiden_name?.trim() || null, sex || "unknown",
-           birth_date || null, birth_place?.trim() || null, death_date || null,
-           death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null,
-           res.locals.user.id],
+           birth_date || null, birth_place, birth_country?.trim() || null, birth_city?.trim() || null, birth_state?.trim() || null,
+           death_date || null, death_place, death_country?.trim() || null, death_city?.trim() || null, death_state?.trim() || null,
+           death_cause?.trim() || null, notes?.trim() || null, res.locals.user.id],
   });
   await syncFts(id);
   res.redirect(`/people/${id}`);
@@ -222,20 +226,26 @@ pagesRouter.get("/people/:id/edit", requireAuth, async (req, res) => {
 
 pagesRouter.post("/people/:id/edit", requireAuth, async (req, res) => {
   const id = String(req.params.id);
-  const { given_name, middle_name, surname, maiden_name, sex, birth_date, birth_place, death_date, death_place, death_cause, notes } =
+  const { given_name, middle_name, surname, maiden_name, sex,
+    birth_date, birth_country, birth_city, birth_state,
+    death_date, death_country, death_city, death_state, death_cause, notes } =
     req.body as Record<string, string>;
   if (!given_name?.trim()) { res.redirect(`/people/${id}/edit`); return; }
+  const birth_place = [birth_city, birth_state, birth_country].filter(Boolean).join(", ") || null;
+  const death_place = [death_city, death_state, death_country].filter(Boolean).join(", ") || null;
   await db.execute({
     sql: `UPDATE people SET given_name=?, middle_name=?, surname=?, maiden_name=?, sex=?,
-          birth_date=?, birth_place=?, death_date=?, death_place=?, death_cause=?, notes=?,
-          updated_at=datetime('now') WHERE id=? AND created_by=?`,
+          birth_date=?, birth_place=?, birth_country=?, birth_city=?, birth_state=?,
+          death_date=?, death_place=?, death_country=?, death_city=?, death_state=?,
+          death_cause=?, notes=?, updated_at=datetime('now') WHERE id=? AND created_by=?`,
     args: [given_name.trim(), middle_name?.trim() || null, surname?.trim() || null,
            maiden_name?.trim() || null, sex || "unknown",
-           birth_date || null, birth_place?.trim() || null, death_date || null,
-           death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null,
-           id, res.locals.user.id],
+           birth_date || null, birth_place, birth_country?.trim() || null, birth_city?.trim() || null, birth_state?.trim() || null,
+           death_date || null, death_place, death_country?.trim() || null, death_city?.trim() || null, death_state?.trim() || null,
+           death_cause?.trim() || null, notes?.trim() || null, id, res.locals.user.id],
   });
   await syncFts(id);
+  if (req.headers["x-autosave"]) { res.sendStatus(204); return; }
   res.redirect(`/people/${id}`);
 });
 

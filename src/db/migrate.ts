@@ -40,6 +40,12 @@ export async function runMigrations(): Promise<void> {
     "ALTER TABLE user ADD COLUMN stripe_customer_id TEXT",
     "ALTER TABLE user ADD COLUMN stripe_subscription_id TEXT",
     "ALTER TABLE user ADD COLUMN username TEXT",
+    "ALTER TABLE people ADD COLUMN birth_country TEXT",
+    "ALTER TABLE people ADD COLUMN birth_city TEXT",
+    "ALTER TABLE people ADD COLUMN birth_state TEXT",
+    "ALTER TABLE people ADD COLUMN death_country TEXT",
+    "ALTER TABLE people ADD COLUMN death_city TEXT",
+    "ALTER TABLE people ADD COLUMN death_state TEXT",
   ];
   for (const sql of alterations) {
     await db.execute(sql).catch(() => {/* column already exists */});

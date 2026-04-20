@@ -44,8 +44,20 @@
           <input id="birth_date" type="text" name="birth_date" placeholder="MM/DD/YYYY" value="<%= fmtDate(p?.birth_date) %>" />
         </div>
         <div>
-          <label for="birth_place">Place</label>
-          <input id="birth_place" type="text" name="birth_place" placeholder="City, State, Country" value="<%= p?.birth_place ?? "" %>" />
+          <label for="birth_country">Country</label>
+          <select id="birth_country" name="birth_country" onchange="updateStateField(this,'birth_state_wrap','birth_state_label','birth_state')">
+            <%~ it.countryOptions(p?.birth_country ?? "") %>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label for="birth_city">City</label>
+          <input id="birth_city" type="text" name="birth_city" value="<%= p?.birth_city ?? "" %>" />
+        </div>
+        <div>
+          <label id="birth_state_label" for="birth_state">State</label>
+          <div id="birth_state_wrap"><input id="birth_state" type="text" name="birth_state" value="<%= p?.birth_state ?? "" %>" /></div>
         </div>
       </div>
     </fieldset>
@@ -58,20 +70,146 @@
           <input id="death_date" type="text" name="death_date" placeholder="MM/DD/YYYY" value="<%= fmtDate(p?.death_date) %>" />
         </div>
         <div>
-          <label for="death_place">Place</label>
-          <input id="death_place" type="text" name="death_place" placeholder="City, State, Country" value="<%= p?.death_place ?? "" %>" />
+          <label for="death_country">Country</label>
+          <select id="death_country" name="death_country" onchange="updateStateField(this,'death_state_wrap','death_state_label','death_state')">
+            <%~ it.countryOptions(p?.death_country ?? "") %>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label for="death_city">City</label>
+          <input id="death_city" type="text" name="death_city" value="<%= p?.death_city ?? "" %>" />
+        </div>
+        <div>
+          <label id="death_state_label" for="death_state">State</label>
+          <div id="death_state_wrap"><input id="death_state" type="text" name="death_state" value="<%= p?.death_state ?? "" %>" /></div>
         </div>
       </div>
       <label for="death_cause">Cause of Death</label>
       <input id="death_cause" type="text" name="death_cause" value="<%= p?.death_cause ?? "" %>" />
     </fieldset>
 
+    <script>
+      const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+      const CA_PROVINCES = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
+
+      function buildStateSelect(name, options, current) {
+        const opts = options.map(o => `<option value="${o}"${o===current?' selected':''}>${o}</option>`).join('');
+        return `<select id="${name}" name="${name}"><option value=""></option>${opts}</select>`;
+      }
+
+      function updateStateField(countrySelect, wrapId, labelId, fieldName) {
+        const country = countrySelect.value;
+        const wrap = document.getElementById(wrapId);
+        const current = wrap.querySelector('input,select')?.value || '';
+        const label = document.getElementById(labelId);
+        if (country === 'United States') {
+          label.textContent = 'State';
+          wrap.innerHTML = buildStateSelect(fieldName, US_STATES, current);
+        } else if (country === 'Canada') {
+          label.textContent = 'Province';
+          wrap.innerHTML = buildStateSelect(fieldName, CA_PROVINCES, current);
+        } else {
+          label.textContent = 'State';
+          wrap.innerHTML = `<input id="${fieldName}" type="text" name="${fieldName}" value="${current.replace(/"/g,'&quot;')}" />`;
+        }
+      }
+
+      const LAST_COUNTRY_KEY = 'rr_last_country';
+
+      function applyLastCountry(selectId, wrapId, labelId, fieldName) {
+        const sel = document.getElementById(selectId);
+        if (sel && !sel.value) {
+          const last = localStorage.getItem(LAST_COUNTRY_KEY);
+          if (last) { sel.value = last; }
+        }
+        updateStateField(sel, wrapId, labelId, fieldName);
+      }
+
+      function rememberCountry(value) {
+        if (value) localStorage.setItem(LAST_COUNTRY_KEY, value);
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        applyLastCountry('birth_country', 'birth_state_wrap', 'birth_state_label', 'birth_state');
+        applyLastCountry('death_country', 'death_state_wrap', 'death_state_label', 'death_state');
+
+        document.getElementById('birth_country').addEventListener('change', (e) => rememberCountry(e.target.value));
+        document.getElementById('death_country').addEventListener('change', (e) => rememberCountry(e.target.value));
+
+        <% if (p) { %>
+        const form = document.querySelector('form');
+        let saveTimer = null;
+        let indicator = null;
+        let savedSnapshot = null;
+
+        function formSnapshot() {
+          const snap = {};
+          new FormData(form).forEach((v, k) => { if (typeof v === 'string') snap[k] = v; });
+          return JSON.stringify(snap);
+        }
+
+        // Capture baseline after state fields are rendered
+        savedSnapshot = formSnapshot();
+
+        function getIndicator() {
+          if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'autosave-indicator';
+            indicator.style.cssText = 'position:fixed;bottom:1.25rem;right:1.25rem;padding:.4rem .85rem;border-radius:.4rem;font-size:.85rem;font-weight:500;z-index:9999;transition:opacity .4s;background:#166534;color:#fff;opacity:0;pointer-events:none';
+            document.body.appendChild(indicator);
+          }
+          return indicator;
+        }
+
+        async function doSave() {
+          if (!form.given_name.value.trim()) return;
+          const current = formSnapshot();
+          if (current === savedSnapshot) return;
+          try {
+            const params = new URLSearchParams();
+            new FormData(form).forEach((v, k) => { if (typeof v === 'string') params.append(k, v); });
+            await fetch(form.action, {
+              method: 'POST',
+              headers: { 'X-Autosave': '1' },
+              body: params,
+            });
+            savedSnapshot = current;
+            const el = getIndicator();
+            el.textContent = 'Saved';
+            el.style.opacity = '1';
+            setTimeout(() => { el.style.opacity = '0'; }, 1500);
+          } catch (_) {}
+        }
+
+        function scheduleSave() {
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(doSave, 1200);
+        }
+
+        form.addEventListener('input', scheduleSave);
+        form.addEventListener('change', scheduleSave);
+        form.addEventListener('blur', (e) => {
+          if (e.target.matches('input,select,textarea')) {
+            clearTimeout(saveTimer);
+            doSave();
+          }
+        }, true);
+        <% } %>
+      });
+    </script>
+
     <label for="notes">Notes</label>
     <textarea id="notes" name="notes" rows="4"><%= p?.notes ?? "" %></textarea>
 
     <div class="form-actions">
-      <button type="submit"><%= p ? "Save Changes" : "Add Person" %></button>
-      <a href="<%= p ? `/people/${p.id}` : "/people" %>" role="button" class="outline">Cancel</a>
+      <% if (p) { %>
+      <a href="/people/<%= p.id %>" role="button">Done</a>
+      <% } else { %>
+      <button type="submit">Add Person</button>
+      <a href="/people" role="button" class="outline">Cancel</a>
+      <% } %>
     </div>
   </form>
 </section>

@@ -95,7 +95,7 @@ demoRouter.get("/demo/people/:id", async (req, res) => {
 });
 
 // GET /demo/tree
-demoRouter.get("/demo/tree", async (_req, res) => {
+demoRouter.get("/demo/tree", async (req, res) => {
   const uid = await getDemoUserId();
   if (!uid) { res.redirect("/"); return; }
 
@@ -104,8 +104,15 @@ demoRouter.get("/demo/tree", async (_req, res) => {
     args: [uid],
   });
 
-  // Use the oldest person as root
-  const rootId = people.rows[0]?.id ? String(people.rows[0].id) : null;
+  const demoCookies = Object.fromEntries(
+    (_req.headers.cookie ?? '').split(';').flatMap(c => {
+      const [k, ...v] = c.trim().split('=');
+      return k ? [[decodeURIComponent(k), decodeURIComponent(v.join('='))]] : [];
+    })
+  );
+  const savedRoot = demoCookies['rr-demo-tree-root'];
+  const validRoot = savedRoot && people.rows.some(p => String(p.id) === savedRoot) ? savedRoot : null;
+  const rootId = validRoot ?? (people.rows[0]?.id ? String(people.rows[0].id) : null);
   let tree = null;
   if (rootId) {
     const { buildDescendantTree } = await import("../lib/tree.js");

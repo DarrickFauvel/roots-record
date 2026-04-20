@@ -13,7 +13,8 @@ peopleApiRouter.use(requireAuth);
 
 // POST /api/people — create
 peopleApiRouter.post("/", async (req, res) => {
-  const { given_name, surname, sex, birth_date, birth_place, death_date, death_place, death_cause, notes } = req.body as Record<string, string>;
+  const { given_name, surname, sex, birth_date, birth_country, birth_city, birth_state,
+    death_date, death_country, death_city, death_state, death_cause, notes } = req.body as Record<string, string>;
   if (!given_name?.trim()) {
     res.status(400).json({ error: "given_name is required" });
     return;
@@ -25,11 +26,15 @@ peopleApiRouter.post("/", async (req, res) => {
     return;
   }
   const id = nanoid();
+  const birth_place = [birth_city, birth_state, birth_country].filter(Boolean).join(", ") || null;
+  const death_place = [death_city, death_state, death_country].filter(Boolean).join(", ") || null;
   await db.execute({
-    sql: `INSERT INTO people (id, given_name, surname, sex, birth_date, birth_place, death_date, death_place, death_cause, notes, created_by)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, given_name.trim(), surname?.trim() || null, sex || "unknown", birth_date || null, birth_place?.trim() || null,
-           death_date || null, death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null, res.locals.user.id],
+    sql: `INSERT INTO people (id, given_name, surname, sex, birth_date, birth_place, birth_country, birth_city, birth_state, death_date, death_place, death_country, death_city, death_state, death_cause, notes, created_by)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, given_name.trim(), surname?.trim() || null, sex || "unknown",
+           birth_date || null, birth_place, birth_country?.trim() || null, birth_city?.trim() || null, birth_state?.trim() || null,
+           death_date || null, death_place, death_country?.trim() || null, death_city?.trim() || null, death_state?.trim() || null,
+           death_cause?.trim() || null, notes?.trim() || null, res.locals.user.id],
   });
   await syncFts(id);
   res.redirect(`/people/${id}`);
@@ -37,18 +42,22 @@ peopleApiRouter.post("/", async (req, res) => {
 
 // PUT /api/people/:id — update (owner only)
 peopleApiRouter.put("/:id", async (req, res) => {
-  const { given_name, surname, sex, birth_date, birth_place, death_date, death_place, death_cause, notes } = req.body as Record<string, string>;
+  const { given_name, surname, sex, birth_date, birth_country, birth_city, birth_state,
+    death_date, death_country, death_city, death_state, death_cause, notes } = req.body as Record<string, string>;
   if (!given_name?.trim()) {
     res.status(400).json({ error: "given_name is required" });
     return;
   }
+  const birth_place = [birth_city, birth_state, birth_country].filter(Boolean).join(", ") || null;
+  const death_place = [death_city, death_state, death_country].filter(Boolean).join(", ") || null;
   await db.execute({
-    sql: `UPDATE people SET given_name=?, surname=?, sex=?, birth_date=?, birth_place=?,
-          death_date=?, death_place=?, death_cause=?, notes=?, updated_at=datetime('now')
+    sql: `UPDATE people SET given_name=?, surname=?, sex=?, birth_date=?, birth_place=?, birth_country=?, birth_city=?, birth_state=?,
+          death_date=?, death_place=?, death_country=?, death_city=?, death_state=?, death_cause=?, notes=?, updated_at=datetime('now')
           WHERE id=? AND created_by=?`,
-    args: [given_name.trim(), surname?.trim() || null, sex || "unknown", birth_date || null, birth_place?.trim() || null,
-           death_date || null, death_place?.trim() || null, death_cause?.trim() || null, notes?.trim() || null,
-           req.params.id, res.locals.user.id],
+    args: [given_name.trim(), surname?.trim() || null, sex || "unknown",
+           birth_date || null, birth_place, birth_country?.trim() || null, birth_city?.trim() || null, birth_state?.trim() || null,
+           death_date || null, death_place, death_country?.trim() || null, death_city?.trim() || null, death_state?.trim() || null,
+           death_cause?.trim() || null, notes?.trim() || null, req.params.id, res.locals.user.id],
   });
   await syncFts(req.params.id);
   res.redirect(`/people/${req.params.id}`);

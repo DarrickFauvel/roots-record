@@ -15,13 +15,13 @@
 </div>
 
 <dl class="vital-facts">
-  <% if (p.birth_date || p.birth_place) { %>
+  <% if (p.birth_date || p.birth_city || p.birth_country) { %>
     <dt>Born</dt>
-    <dd><%= [fmtDate(p.birth_date), p.birth_place].filter(Boolean).join(' — ') %></dd>
+    <dd><%= [fmtDate(p.birth_date), [p.birth_city, p.birth_state, p.birth_country].filter(Boolean).join(', ')].filter(Boolean).join(' — ') %></dd>
   <% } %>
-  <% if (p.death_date || p.death_place) { %>
+  <% if (p.death_date || p.death_city || p.death_country) { %>
     <dt>Died</dt>
-    <dd><%= [fmtDate(p.death_date), p.death_place].filter(Boolean).join(' — ') %><% if (p.death_cause) { %> <span style="color:var(--muted)">(<%= p.death_cause %>)</span><% } %></dd>
+    <dd><%= [fmtDate(p.death_date), [p.death_city, p.death_state, p.death_country].filter(Boolean).join(', ')].filter(Boolean).join(' — ') %><% if (p.death_cause) { %> <span style="color:var(--muted)">(<%= p.death_cause %>)</span><% } %></dd>
   <% } %>
 </dl>
 
